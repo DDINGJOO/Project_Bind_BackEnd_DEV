@@ -13,3 +13,8 @@ spring:
       port: ${REDIS_PORT}
 server:
   port: ${AUTH_SEVER_PORT}
+
+jwt:
+  secret: ${JWT_SECRET}
+  access-token-validity-ms: 900000      # 15분
+  refresh-token-validity-ms: 1209600000 # 14일
