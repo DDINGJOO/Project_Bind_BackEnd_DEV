@@ -6,6 +6,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
+
     implementation 'com.mysql:mysql-connector-j'
 
     implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
@@ -17,4 +18,6 @@ dependencies {
     implementation project(":common:exception")
     implementation project (":common:util")
 
+
+    testImplementation 'com.h2database:h2'
 }

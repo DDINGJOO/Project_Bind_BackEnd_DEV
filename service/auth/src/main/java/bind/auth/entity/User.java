@@ -33,5 +33,9 @@ public class User {
     private LocalDateTime lastLoginAt;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+
+    public void setIsActive(boolean b) {
+        this.isActive = b;
+    }
 }
 

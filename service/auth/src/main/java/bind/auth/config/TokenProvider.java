@@ -74,4 +74,12 @@ public class TokenProvider {
             throw new AuthException(AuthErrorCode.TOKEN_INVALID.getMessage(), AuthErrorCode.TOKEN_INVALID);
         }
     }
+
+    public Claims decodeToken(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
 }

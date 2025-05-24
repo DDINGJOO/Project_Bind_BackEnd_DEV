@@ -25,6 +25,7 @@ import util.PkProvider;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -36,8 +37,8 @@ public class AuthService {
     private final UserLoginLogRepository userLoginLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final TokenProvider tokenProvider;
-    private final RefreshTokenRedisService refreshTokenRedisService;
     private final UserSuspensionService userSuspensionService;
+    private final RedisService redisService;
 
 
     public LoginResponse login(LoginRequest request, String ip, String userAgent) {
@@ -61,7 +62,7 @@ public class AuthService {
         String refreshToken = tokenProvider.createRefreshToken(user.getId());
 
         // Redis 저장
-        refreshTokenRedisService.save(user.getId(), request.deviceId(), refreshToken, Duration.ofDays(14));
+        redisService.saveRefreshToken(user.getId(), request.deviceId(), refreshToken, Duration.ofDays(14));
 
         // DB 저장
         RefreshToken entity = RefreshToken.builder()
@@ -79,7 +80,7 @@ public class AuthService {
     }
 
     public void logout(String userId, String deviceId) {
-        refreshTokenRedisService.delete(userId, deviceId);
+        redisService.deleteRefreshToken(userId, deviceId);
         refreshTokenRepository.deleteByUserIdAndDeviceId(userId, deviceId);
     }
 
@@ -102,14 +103,14 @@ public class AuthService {
     }
 
     public LoginResponse refresh(String userId, String deviceId, String refreshToken) {
-        if (!refreshTokenRedisService.validate(userId, deviceId, refreshToken)) {
+        if (!redisService.validateRefreshToken(userId, deviceId, refreshToken)) {
             throw new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN.getMessage(), AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
         String newAccessToken = tokenProvider.createAccessToken(userId);
         String newRefreshToken = tokenProvider.createRefreshToken(userId);
 
-        refreshTokenRedisService.save(userId, deviceId, newRefreshToken, Duration.ofDays(14));
+        redisService.saveRefreshToken(userId, deviceId, newRefreshToken, Duration.ofDays(14));
 
         RefreshToken tokenEntity = refreshTokenRepository.findByUserIdAndDeviceId(userId, deviceId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN.getMessage(), AuthErrorCode.INVALID_REFRESH_TOKEN));
@@ -130,4 +131,29 @@ public class AuthService {
                 .build();
         userLoginLogRepository.save(log);
     }
+    public void updateRefreshToken(String userId, String deviceId, String ip, String userAgent) {
+        String newRefreshToken = tokenProvider.createRefreshToken(userId);
+
+        // DB 갱신
+        Optional<RefreshToken> existing = refreshTokenRepository.findByUserIdAndDeviceId(userId, deviceId);
+        if (existing.isPresent()) {
+            existing.get().update(newRefreshToken, LocalDateTime.now(), LocalDateTime.now().plusDays(14));
+            refreshTokenRepository.save(existing.get());
+        } else {
+            RefreshToken tokenEntity = RefreshToken.builder()
+                    .userId(userId)
+                    .deviceId(deviceId)
+                    .clientIp(ip)
+                    .userAgent(userAgent)
+                    .token(newRefreshToken)
+                    .issuedAt(LocalDateTime.now())
+                    .expiry(LocalDateTime.now().plusDays(14))
+                    .build();
+            refreshTokenRepository.save(tokenEntity);
+        }
+
+        // Redis 저장
+        redisService.saveRefreshToken(userId, deviceId,newRefreshToken, Duration.ofDays(14));
+    }
+
 }
