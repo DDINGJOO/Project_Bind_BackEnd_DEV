@@ -24,4 +24,10 @@ public class RefreshToken {
     private String userAgent;
     private LocalDateTime expiry;
     private LocalDateTime issuedAt;
+
+    public void update(String token, LocalDateTime issuedAt, LocalDateTime expiry) {
+        this.token = token;
+        this.issuedAt = issuedAt;
+        this.expiry = expiry;
+    }
 }
