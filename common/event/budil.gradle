@@ -1,0 +1,5 @@
+dependencies {
+
+    implementation 'com.fasterxml.jackson:databind'
+    implementation project(':common:data')
+}

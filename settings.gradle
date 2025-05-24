@@ -1,0 +1,9 @@
+rootProject.name = 'backend'
+
+include 'service'
+include 'common'
+
+include 'common:data'
+include 'common:event'
+include 'service:auth'
+
