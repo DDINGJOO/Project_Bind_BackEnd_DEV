@@ -6,9 +6,7 @@ import bind.auth.config.TokenProvider;
 import bind.auth.dto.request.LoginRequest;
 import bind.auth.dto.request.RegisterRequest;
 import bind.auth.dto.response.LoginResponse;
-import bind.auth.entity.User;
-import bind.auth.entity.RefreshToken;
-import bind.auth.entity.UserLoginLog;
+import bind.auth.entity.*;
 import bind.auth.exception.AuthErrorCode;
 import bind.auth.exception.AuthException;
 
@@ -16,11 +14,14 @@ import bind.auth.repository.RefreshTokenRepository;
 import bind.auth.repository.UserLoginLogRepository;
 import bind.auth.repository.UserRepository;
 
+import bind.auth.repository.UserRoleRepository;
 import data.enums.auth.ProviderType;
+import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import util.PkProvider;
 
 import java.time.Duration;
@@ -36,6 +37,7 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserLoginLogRepository userLoginLogRepository;
     private final PasswordEncoder passwordEncoder;
+    private final UserRoleRepository userRoleRepository;
     private final TokenProvider tokenProvider;
     private final UserSuspensionService userSuspensionService;
     private final RedisService redisService;
@@ -84,6 +86,8 @@ public class AuthService {
         refreshTokenRepository.deleteByUserIdAndDeviceId(userId, deviceId);
     }
 
+
+    @Transactional
     public void register(RegisterRequest request) {
         if (userRepository.existsByLoginId(request.loginId())) {
             throw new AuthException(AuthErrorCode.DUPLICATE_LOGIN_ID.getMessage(), AuthErrorCode.DUPLICATE_LOGIN_ID);
@@ -100,6 +104,14 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+        UserRole role = new UserRole(
+                user,
+                new UserRoleId(user.getId(), UserRoleType.USER).getRole(),
+                LocalDateTime.now(),
+                "System"
+        );
+        userRoleRepository.save(role);
     }
 
     public LoginResponse refresh(String userId, String deviceId, String refreshToken) {

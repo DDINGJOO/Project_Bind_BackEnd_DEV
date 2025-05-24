@@ -7,10 +7,12 @@ import bind.auth.dto.request.RegisterRequest;
 import bind.auth.dto.response.LoginResponse;
 import bind.auth.entity.RefreshToken;
 import bind.auth.entity.User;
+import bind.auth.entity.UserRole;
 import bind.auth.exception.AuthException;
 import bind.auth.repository.RefreshTokenRepository;
 import bind.auth.repository.UserLoginLogRepository;
 import bind.auth.repository.UserRepository;
+import bind.auth.repository.UserRoleRepository;
 import data.enums.auth.ProviderType;
 import exception.BaseException;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +44,7 @@ class AuthServiceTest {
     private UserRepository userRepository;
     @Mock private UserLoginLogRepository userLoginLogRepository;
     @Mock private RefreshTokenRepository refreshTokenRepository;
-
+    @Mock private UserRoleRepository userRoleRepository;
     @Mock private TokenProvider tokenProvider;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private RedisService redisService;
@@ -99,6 +101,19 @@ class AuthServiceTest {
                 authService.login(new LoginRequest("testId", rawPassword, deviceId), "1.1.1.1", "Chrome"))
                 .isInstanceOf(BaseException.class)
                 .hasMessageContaining(AuthErrorCode.PASSWORD_NOT_MATCHED.getMessage());
+    }
+
+    @Test
+    @DisplayName("회원가입 시 기본 권한 부여")
+    void register_assignsDefaultRole() {
+        when(userRepository.existsByLoginId("newUser")).thenReturn(false);
+        when(passwordEncoder.encode(any())).thenReturn("encodedPwd");
+
+        RegisterRequest request = new RegisterRequest("newUser", "pwd123");
+        authService.register(request);
+
+        verify(userRepository).save(any(User.class));
+        verify(userRoleRepository).save(any(UserRole.class)); // 권한 저장 검증
     }
 
     @Test

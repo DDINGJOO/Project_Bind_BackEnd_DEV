@@ -27,6 +27,7 @@ class RedisIntegrationTest {
     private final String deviceId = "device-001";
 
     @Test
+    @DisplayName("Refresh 토큰 생성 및 저장 후 디코딩 테스트")
     void saveAndDecodeRefreshToken() {
         // 토큰 생성 및 저장
         String token = tokenProvider.createRefreshToken(userId);
