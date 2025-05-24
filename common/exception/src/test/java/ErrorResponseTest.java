@@ -1,4 +1,6 @@
 
+import exception.ErrorCode;
+import exception.ErrorResponse;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +27,7 @@ class ErrorResponseTest {
     }
 
     @Test
-    @DisplayName("ErrorCode에서 ErrorResponse 생성 테스트")
+    @DisplayName("ErrorCode에서 exception.ErrorResponse 생성 테스트")
     void createErrorResponseFromErrorCode() {
         ErrorResponse response = ErrorResponse.from(DummyErrorCode.EXAMPLE_ERROR);
 
