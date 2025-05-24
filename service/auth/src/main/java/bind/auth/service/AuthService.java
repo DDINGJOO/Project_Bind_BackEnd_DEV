@@ -2,7 +2,6 @@ package bind.auth.service;
 
 
 
-import bind.auth.config.TokenProvider;
 import bind.auth.dto.request.LoginRequest;
 import bind.auth.dto.request.RegisterRequest;
 import bind.auth.dto.response.LoginResponse;
@@ -22,7 +21,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import security.jwt.JwtProvider;
 import util.PkProvider;
+
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -37,8 +38,9 @@ public class AuthService {
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserLoginLogRepository userLoginLogRepository;
     private final PasswordEncoder passwordEncoder;
+    private  final JwtProvider tokenProvider;
     private final UserRoleRepository userRoleRepository;
-    private final TokenProvider tokenProvider;
+
     private final UserSuspensionService userSuspensionService;
     private final RedisService redisService;
 

@@ -23,7 +23,6 @@ spring:
       port: 6380
 
 jwt:
-  secret: test-jwt-secret-key-1234567890123456
-  access-token-validity-ms: 3600000
-  refresh-token-validity-ms: 1209600000
-
+  secret: test-secret-key-test-secret-key-123456
+  access-token-validity-ms: 900000      # 15분
+  refresh-token-validity-ms: 1209600000 # 14일

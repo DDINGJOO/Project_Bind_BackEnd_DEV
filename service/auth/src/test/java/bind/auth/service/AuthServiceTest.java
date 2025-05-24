@@ -1,7 +1,6 @@
 package bind.auth.service;
 
 
-import bind.auth.config.TokenProvider;
 import bind.auth.dto.request.LoginRequest;
 import bind.auth.dto.request.RegisterRequest;
 import bind.auth.dto.response.LoginResponse;
@@ -23,6 +22,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import bind.auth.exception.AuthErrorCode;
+import security.jwt.JwtProvider;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -45,7 +45,7 @@ class AuthServiceTest {
     @Mock private UserLoginLogRepository userLoginLogRepository;
     @Mock private RefreshTokenRepository refreshTokenRepository;
     @Mock private UserRoleRepository userRoleRepository;
-    @Mock private TokenProvider tokenProvider;
+    @Mock private JwtProvider tokenProvider;
     @Mock private PasswordEncoder passwordEncoder;
     @Mock private RedisService redisService;
     @Mock private UserSuspensionService userSuspensionService;

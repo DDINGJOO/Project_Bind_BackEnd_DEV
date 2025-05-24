@@ -5,6 +5,7 @@ include 'common:data'
 include 'common:event'
 include 'common:exception'
 include 'common:util'
+include 'common:security'
 
 include 'service'
 include 'service:auth'

@@ -1,11 +1,10 @@
-package bind.auth.security.tocken; // 위치: auth-service/src/test/java/bind/auth/security/TokenProviderTest.java
+package bind.auth.security.tocken;
 
-import bind.auth.config.TokenProvider;
-import bind.auth.exception.AuthErrorCode;
-import bind.auth.exception.AuthException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import security.jwt.JwtProperties;
+import security.jwt.JwtProvider;
 
 import java.util.UUID;
 
@@ -14,16 +13,18 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TokenProviderTest {
 
-    private TokenProvider tokenProvider;
+    private JwtProvider tokenProvider;
 
     @BeforeEach
     void setUp() {
-        // 테스트용 임의의 시크릿 키 (32바이트 이상)
-        String secret = "test-secret-key-test-secret-key-123456";
-        long accessValidity = 1000;      // 1초 (만료 테스트용)
-        long refreshValidity = 1000 * 3; // 3초 (만료 테스트용)
+        // 수동으로 JwtProperties 설정
+        JwtProperties jwtProperties = new JwtProperties();
+        jwtProperties.setSecret("test-secret-key-test-secret-key-123456");
+        jwtProperties.setAccessTokenValidity(1000);     // 1초
+        jwtProperties.setRefreshTokenValidity(3000);    // 3초
 
-        tokenProvider = new TokenProvider(secret, accessValidity, refreshValidity);
+        tokenProvider = new JwtProvider(jwtProperties);
+        tokenProvider.init(); // PostConstruct 직접 호출
     }
 
     @Test
@@ -33,7 +34,6 @@ public class TokenProviderTest {
         String token = tokenProvider.createAccessToken(userId);
 
         UUID parsedUserId = tokenProvider.getUserIdFromTokenOrThrow(token);
-
         assertThat(parsedUserId.toString()).isEqualTo(userId);
     }
 
@@ -44,7 +44,6 @@ public class TokenProviderTest {
         String token = tokenProvider.createRefreshToken(userId);
 
         UUID parsedUserId = tokenProvider.getUserIdFromTokenOrThrow(token);
-
         assertThat(parsedUserId.toString()).isEqualTo(userId);
     }
 
@@ -54,9 +53,8 @@ public class TokenProviderTest {
         String invalidToken = "fake.token.value";
 
         assertThatThrownBy(() -> tokenProvider.getUserIdFromTokenOrThrow(invalidToken))
-                .isInstanceOf(AuthException.class)
-                .extracting(e -> ((AuthException) e).getErrorCode())
-                .isEqualTo(AuthErrorCode.TOKEN_INVALID);
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -65,12 +63,11 @@ public class TokenProviderTest {
         String userId = UUID.randomUUID().toString();
         String token = tokenProvider.createAccessToken(userId);
 
-        Thread.sleep(1500);
+        Thread.sleep(1500); // 1.5초 후 만료됨
 
         assertThatThrownBy(() -> tokenProvider.getUserIdFromTokenOrThrow(token))
-                .isInstanceOf(AuthException.class)
-                .extracting(e -> ((AuthException) e).getErrorCode())
-                .isEqualTo(AuthErrorCode.TOKEN_EXPIRED);
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Invalid token");
     }
 
     @Test
@@ -79,11 +76,10 @@ public class TokenProviderTest {
         String userId = UUID.randomUUID().toString();
         String token = tokenProvider.createRefreshToken(userId);
 
-        Thread.sleep(3100);
+        Thread.sleep(3100); // 3.1초 후 만료됨
 
         assertThatThrownBy(() -> tokenProvider.getUserIdFromTokenOrThrow(token))
-                .isInstanceOf(AuthException.class)
-                .extracting(e -> ((AuthException) e).getErrorCode())
-                .isEqualTo(AuthErrorCode.TOKEN_EXPIRED);
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("Invalid token");
     }
 }

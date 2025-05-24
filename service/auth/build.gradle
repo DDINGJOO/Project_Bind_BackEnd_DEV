@@ -17,6 +17,7 @@ dependencies {
     implementation project(":common:event")
     implementation project(":common:exception")
     implementation project (":common:util")
+    implementation project(':common:security')
 
 
     testImplementation 'com.h2database:h2'
