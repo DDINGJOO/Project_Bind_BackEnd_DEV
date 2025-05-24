@@ -1,13 +1,16 @@
-package bind.auth.security.tocken;// 위치: auth-service/src/test/java/bind/auth/security/TokenProviderTest.java
-
+package bind.auth.security.tocken; // 위치: auth-service/src/test/java/bind/auth/security/TokenProviderTest.java
 
 import bind.auth.config.TokenProvider;
+import bind.auth.exception.AuthErrorCode;
+import bind.auth.exception.AuthException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class TokenProviderTest {
 
@@ -18,7 +21,7 @@ public class TokenProviderTest {
         // 테스트용 임의의 시크릿 키 (32바이트 이상)
         String secret = "test-secret-key-test-secret-key-123456";
         long accessValidity = 1000;      // 1초 (만료 테스트용)
-        long refreshValidity = 1000 * 3;     // 1초 (만료 테스트용)
+        long refreshValidity = 1000 * 3; // 3초 (만료 테스트용)
 
         tokenProvider = new TokenProvider(secret, accessValidity, refreshValidity);
     }
@@ -29,10 +32,9 @@ public class TokenProviderTest {
         String userId = UUID.randomUUID().toString();
         String token = tokenProvider.createAccessToken(userId);
 
-        String parsedUserId = String.valueOf(tokenProvider.getUserIdFromToken(token));
+        UUID parsedUserId = tokenProvider.getUserIdFromTokenOrThrow(token);
 
-        assertThat(parsedUserId).isEqualTo(userId);
-        assertThat(tokenProvider.validateToken(token)).isTrue();
+        assertThat(parsedUserId.toString()).isEqualTo(userId);
     }
 
     @Test
@@ -41,40 +43,47 @@ public class TokenProviderTest {
         String userId = UUID.randomUUID().toString();
         String token = tokenProvider.createRefreshToken(userId);
 
-        String parsedUserId = String.valueOf(tokenProvider.getUserIdFromToken(token));
+        UUID parsedUserId = tokenProvider.getUserIdFromTokenOrThrow(token);
 
-        assertThat(parsedUserId).isEqualTo(userId);
-        assertThat(tokenProvider.validateToken(token)).isTrue();
+        assertThat(parsedUserId.toString()).isEqualTo(userId);
     }
 
     @Test
-    @DisplayName("잘못된 토큰 유효성 검사 실패 테스트")
-    void invalidTokenShouldFail() {
+    @DisplayName("잘못된 토큰 예외 테스트")
+    void invalidTokenShouldThrow() {
         String invalidToken = "fake.token.value";
-        assertThat(tokenProvider.validateToken(invalidToken)).isFalse();
+
+        assertThatThrownBy(() -> tokenProvider.getUserIdFromTokenOrThrow(invalidToken))
+                .isInstanceOf(AuthException.class)
+                .extracting(e -> ((AuthException) e).getErrorCode())
+                .isEqualTo(AuthErrorCode.TOKEN_INVALID);
     }
 
     @Test
-    @DisplayName("만료된 토큰 유효성 검사 실패 테스트")
-    void expiredTokenShouldFail() throws InterruptedException {
+    @DisplayName("만료된 AccessToken 예외 테스트")
+    void expiredAccessTokenShouldThrow() throws InterruptedException {
         String userId = UUID.randomUUID().toString();
         String token = tokenProvider.createAccessToken(userId);
 
-        // 1초 기다려 만료시키기
         Thread.sleep(1500);
 
-        assertThat(tokenProvider.validateToken(token)).isFalse();
+        assertThatThrownBy(() -> tokenProvider.getUserIdFromTokenOrThrow(token))
+                .isInstanceOf(AuthException.class)
+                .extracting(e -> ((AuthException) e).getErrorCode())
+                .isEqualTo(AuthErrorCode.TOKEN_EXPIRED);
     }
 
     @Test
-    @DisplayName("만료된 RefreshToken 유효성 검사 실패 테스트")
-    void expiredRefreshTokenShouldFail() throws InterruptedException {
+    @DisplayName("만료된 RefreshToken 예외 테스트")
+    void expiredRefreshTokenShouldThrow() throws InterruptedException {
         String userId = UUID.randomUUID().toString();
         String token = tokenProvider.createRefreshToken(userId);
 
-        // 1초 기다려 만료시키기
         Thread.sleep(3100);
 
-        assertThat(tokenProvider.validateToken(token)).isFalse();
+        assertThatThrownBy(() -> tokenProvider.getUserIdFromTokenOrThrow(token))
+                .isInstanceOf(AuthException.class)
+                .extracting(e -> ((AuthException) e).getErrorCode())
+                .isEqualTo(AuthErrorCode.TOKEN_EXPIRED);
     }
 }
