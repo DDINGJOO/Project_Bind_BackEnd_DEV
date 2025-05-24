@@ -15,6 +15,8 @@ public enum AuthErrorCode implements ErrorCode {
     DEACTIVATED_USER("AUTH_003", "비활성화된 사용자입니다.", 403),
     SUSPENDED_USER("AUTH_004", "정지된 사용자입니다.", 403),
 
+    CURRENT_PASSWORD_MATCHED("AUTH_011", "현재 비밀번호와 일치합니다.", 400),
+
     // 토큰 관련
     TOKEN_INVALID("AUTH_005", "유효하지 않은 토큰입니다.", 401),
     TOKEN_EXPIRED("AUTH_006", "만료된 토큰입니다.", 401),

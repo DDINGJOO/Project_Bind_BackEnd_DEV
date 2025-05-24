@@ -3,17 +3,16 @@ package bind.auth.service;
 
 
 import bind.auth.dto.request.LoginRequest;
+import bind.auth.dto.request.PasswordChangeRequest;
 import bind.auth.dto.request.RegisterRequest;
+import bind.auth.dto.request.WithdrawRequest;
 import bind.auth.dto.response.LoginResponse;
 import bind.auth.entity.*;
 import bind.auth.exception.AuthErrorCode;
 import bind.auth.exception.AuthException;
 
-import bind.auth.repository.RefreshTokenRepository;
-import bind.auth.repository.UserLoginLogRepository;
-import bind.auth.repository.UserRepository;
+import bind.auth.repository.*;
 
-import bind.auth.repository.UserRoleRepository;
 import data.enums.auth.ProviderType;
 import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
@@ -42,7 +41,9 @@ public class AuthService {
     private final UserRoleRepository userRoleRepository;
 
     private final UserSuspensionService userSuspensionService;
+    private final WithdrawHistoryRepository withdrawHistoryRepository;
     private final RedisService redisService;
+    private final PasswordHistoryRepository passwordHistoryRepository;
 
 
     public LoginResponse login(LoginRequest request, String ip, String userAgent) {
@@ -88,6 +89,31 @@ public class AuthService {
         refreshTokenRepository.deleteByUserIdAndDeviceId(userId, deviceId);
     }
 
+    @Transactional
+    public void changePassword(String userId, PasswordChangeRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
+
+        if (!passwordEncoder.matches(request.newPassword(), request.newPasswordCheck())) {
+            throw new AuthException(AuthErrorCode.PASSWORD_NOT_MATCHED.getMessage(), AuthErrorCode.PASSWORD_NOT_MATCHED);
+        }
+
+        if(!passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new AuthException(AuthErrorCode.CURRENT_PASSWORD_MATCHED.getMessage(), AuthErrorCode.CURRENT_PASSWORD_MATCHED);
+        }
+
+        String encodedNewPassword = passwordEncoder.encode(request.newPassword());
+        user.setPassword(encodedNewPassword);
+        userRepository.save(user);
+
+        passwordHistoryRepository.save(
+                PasswordHistory.builder()
+                        .user(user)
+                        .passwordHash(encodedNewPassword)
+                        .changedAt(LocalDateTime.now())
+                        .build()
+        );
+    }
 
     @Transactional
     public void register(RegisterRequest request) {
@@ -168,6 +194,19 @@ public class AuthService {
 
         // Redis 저장
         redisService.saveRefreshToken(userId, deviceId,newRefreshToken, Duration.ofDays(14));
+    }
+
+    public void withdraw(String userId, WithdrawRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
+        user.setIsActive(false);
+        userRepository.save(user);
+
+        withdrawHistoryRepository.save(WithdrawHistory.builder()
+                .user(user)
+                .reason(request.reason())
+                .withdrawAt(LocalDateTime.now())
+                .build());
     }
 
 }
