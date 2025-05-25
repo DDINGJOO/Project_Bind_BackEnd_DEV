@@ -21,7 +21,12 @@ public class UserReportController {
     private final JwtProvider jwtProvider;
 
 
-
+    /**
+     * 사용자 신고 API
+     * @param request
+     * @param bearerToken
+     * @return
+     */
     @PostMapping
     public ResponseEntity<Void> reportUser(@RequestBody ReportRequest request,
                                            @RequestHeader("Authorization") String bearerToken) {
@@ -29,6 +34,14 @@ public class UserReportController {
         userReportService.reportUser(userId,request);
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 관리자용 사용자 신고 조회 API
+     * @param bearerToken
+     * @param page
+     * @param size
+     * @return
+     */
     @GetMapping("/my")
     public ResponseEntity<Page<UserReportResponse>> getMyReports(
             @RequestHeader("Authorization") String bearerToken,

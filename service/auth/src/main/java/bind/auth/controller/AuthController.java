@@ -13,6 +13,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import security.jwt.JwtProvider;
 
 /**
  * 인증 관련 기능을 제공하는 컨트롤러입니다.
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtProvider jwtProvider;
 
     /**
      * 회원가입 API
@@ -64,7 +66,11 @@ public class AuthController {
     }
 
     /**
-     * 리프레시 토큰을 이용한 액세스 토큰 재발급 API
+     * 토큰 재발급 API
+     * @param userId 사용자 ID
+     *               @param deviceId 디바이스 ID
+     *                               @param refreshToken 리프레시 토큰
+     *
      */
     @Operation(summary = "토큰 재발급", description = "리프레시 토큰을 통한 새로운 엑세스/리프레시 토큰 발급")
     @PostMapping("/refresh")
@@ -81,6 +87,12 @@ public class AuthController {
     }
 
 
+
+    /**
+     * 비밀번호 변경 API
+     * @param userId 사용자 ID
+     * @param request 비밀번호 변경 요청 (현재 비밀번호, 새 비밀번호)
+     */
     @Operation(summary = "비밀번호 변경", description = "현재 비밀번호를 새 비밀번호로 변경합니다.")
     @PutMapping("/change-password")
     public ResponseEntity<BaseResponse<Void>> changePassword(
@@ -114,5 +126,28 @@ public class AuthController {
         }
     }
 
+
+    @GetMapping("/health")
+    public ResponseEntity<BaseResponse<String>> healthCheck() {
+        return ResponseEntity.ok(BaseResponse.success("Auth service is running"));
+    }
+
+    /**
+     * 마이 페이지 API
+     * @return 마이 페이지 정보
+     */
+    @GetMapping("/my-id")
+    public ResponseEntity<BaseResponse<String>> getMyId(
+            @RequestHeader("Authorization") String bearerToken
+    ) {
+        try {
+            String userId = jwtProvider.getUserIdFromToken(bearerToken);
+            return ResponseEntity.ok(BaseResponse.success(userId));
+        } catch (AuthException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.error("알 수 없는 오류가 발생했습니다."));
+        }
+    }
 
 }

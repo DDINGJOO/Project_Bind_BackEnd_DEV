@@ -93,6 +93,12 @@ public class UserAdminController {
         }
     }
 
+
+    /**
+     * 정지 중인 유저 목록을 조회합니다.
+     * 현재 정지 상태인 유저들의 목록을 반환하며, releaseAt이 미래이거나 null인 경우만 포함됩니다.
+     * @return
+     */
     @Operation(
             summary = "정지 중인 유저 목록 조회",
             description = "현재 정지 상태인 유저들의 목록을 조회합니다. releaseAt이 미래거나 null인 경우만 포함됩니다."
@@ -107,6 +113,12 @@ public class UserAdminController {
         }
     }
 
+
+    /**
+     * 특정 유저의 정지 이력을 조회합니다.
+     * @param userId
+     * @return
+     */
     @Operation(
             summary = "특정 유저의 정지 이력 조회",
             description = "지정된 유저 ID에 대해 모든 정지 이력을 조회합니다."

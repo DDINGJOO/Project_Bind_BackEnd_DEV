@@ -18,12 +18,19 @@ import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Auth - Withdraw", description = "회원 탈퇴 관련 API")
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/admin/auth")
 @RequiredArgsConstructor
 public class AuthWithdrawController {
 
     private final AuthService authService;
 
+
+    /**
+     * 회원 탈퇴 API
+     * @param userId
+     * @param request
+     * @return
+     */
     @Operation(
             summary = "회원 탈퇴",
             description = "해당 사용자의 계정을 비활성화하고 탈퇴 이력을 기록합니다.",
