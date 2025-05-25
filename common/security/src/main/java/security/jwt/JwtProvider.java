@@ -50,6 +50,8 @@ public class JwtProvider {
     }
     public String getUserIdFromToken(String token) {
         try {
+            // "Bearer " 접두사를 제거하고 토큰을 디코딩합니다.
+            token = pasteToken(token);
             Claims claims = decodeToken(token);
             return claims.getSubject();
         } catch (JwtException | IllegalArgumentException e) {
@@ -60,6 +62,8 @@ public class JwtProvider {
 
     public String getRoleFromToken(String token) {
         try {
+            // "Bearer " 접두사를 제거하고 토큰을 디코딩합니다.
+            token = pasteToken(token);
             Claims claims = decodeToken(token);
             return claims.get("role", String.class);
         } catch (JwtException | IllegalArgumentException e) {
@@ -95,6 +99,14 @@ public class JwtProvider {
             throw new security.exception.SecurityException(SecurityErrorCode.TOKEN_EXPIRED.getMessage(), SecurityErrorCode.TOKEN_EXPIRED);
         } catch (JwtException e) {
             throw new security.exception.SecurityException(SecurityErrorCode.TOKEN_INVALID.getMessage(), SecurityErrorCode.TOKEN_INVALID);
+        }
+    }
+
+    private String pasteToken(String token) {
+        if (token.startsWith("Bearer ")) {
+            return token.substring(7);
+        } else {
+            return token;
         }
     }
 }

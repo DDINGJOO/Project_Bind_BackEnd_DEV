@@ -3,6 +3,7 @@ package security.util;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import security.jwt.JwtProvider;
 
 public class SecurityUtil {
 
@@ -13,4 +14,5 @@ public class SecurityUtil {
         }
         return authentication.getPrincipal().toString();  // userId가 principal에 저장됨
     }
+
 }

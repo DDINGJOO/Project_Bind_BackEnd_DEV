@@ -1,8 +1,10 @@
 package bind.auth.controller;
 
 import bind.auth.dto.request.UserSuspensionRequest;
+import bind.auth.dto.response.UserReportResponse;
 import bind.auth.dto.response.UserSuspensionStatusResponse;
 import bind.auth.exception.AuthException;
+import bind.auth.service.UserReportService;
 import bind.auth.service.UserSuspensionService;
 import data.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -12,6 +14,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -20,12 +26,13 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/admin/suspensions")
+@RequestMapping("/api/admin/user")
 @RequiredArgsConstructor
 @Tag(name = "User Suspension", description = "유저 정지 관리 API (관리자 전용)")
 public class UserAdminController {
 
     private final UserSuspensionService suspensionService;
+    private final UserReportService userReportService;
 
     /**
      * 유저를 일정 기간 동안 정지하거나 영구 정지합니다.
@@ -115,4 +122,30 @@ public class UserAdminController {
             return ResponseEntity.internalServerError().body(BaseResponse.error("유저 정지 이력 조회 중 오류 발생"));
         }
     }
+
+
+    /**
+     * 유저 신고 목록을 페이지 단위로 조회합니다.
+     *
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 신고 목록과 함께 200 OK 응답
+     */
+    @Operation(
+            summary = "유저 신고 목록 조회",
+            description = "신고된 유저들의 목록을 페이지 단위로 조회합니다. 최신 신고부터 정렬됩니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "신고 목록 조회 성공"),
+                    @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+            }
+    )
+    @GetMapping("/reports")
+    public ResponseEntity<Page<UserReportResponse>> getReports(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("reportedAt").descending());
+        return ResponseEntity.ok(userReportService.getReports(pageable));
+    }
+
 }

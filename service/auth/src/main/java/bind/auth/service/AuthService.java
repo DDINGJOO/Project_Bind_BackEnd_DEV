@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import security.jwt.JwtProvider;
 import security.jwt.TokenParam;
+
 import util.PkProvider;
 
 
@@ -43,7 +44,6 @@ public class AuthService {
     private final WithdrawHistoryRepository withdrawHistoryRepository;
     private final RedisService redisService;
     private final PasswordHistoryRepository passwordHistoryRepository;
-
 
     public LoginResponse login(LoginRequest request, String ip, String userAgent) {
         User user = userRepository.findByLoginId(request.loginId())
@@ -223,5 +223,7 @@ public class AuthService {
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_ROLE_NOT_FOUND.getMessage(), AuthErrorCode.USER_ROLE_NOT_FOUND));
         return new TokenParam(userId, role.getRole().name());
     }
+
+
 
 }
