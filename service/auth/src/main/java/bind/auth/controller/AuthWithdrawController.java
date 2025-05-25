@@ -27,9 +27,9 @@ public class AuthWithdrawController {
 
     /**
      * 회원 탈퇴 API
-     * @param userId
-     * @param request
-     * @return
+     * @param userId 사용자 ID
+     * @param request 탈퇴 요청 정보
+     * @return 탈퇴 성공 여부
      */
     @Operation(
             summary = "회원 탈퇴",

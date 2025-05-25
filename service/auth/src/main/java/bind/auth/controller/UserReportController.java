@@ -23,9 +23,9 @@ public class UserReportController {
 
     /**
      * 사용자 신고 API
-     * @param request
-     * @param bearerToken
-     * @return
+     * @param request 신고 요청 정보
+     * @param bearerToken JWT 토큰 (Authorization 헤더에 포함)
+     * @return 신고 성공 응답
      */
     @PostMapping
     public ResponseEntity<Void> reportUser(@RequestBody ReportRequest request,
@@ -37,10 +37,10 @@ public class UserReportController {
 
     /**
      * 관리자용 사용자 신고 조회 API
-     * @param bearerToken
-     * @param page
-     * @param size
-     * @return
+     * @param bearerToken JWT 토큰 (Authorization 헤더에 포함)
+     * @param page 페이지 번호 (0부터 시작)
+     * @param size 페이지 크기
+     * @return 신고 목록 응답
      */
     @GetMapping("/my")
     public ResponseEntity<Page<UserReportResponse>> getMyReports(

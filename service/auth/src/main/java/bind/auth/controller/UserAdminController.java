@@ -19,7 +19,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -97,7 +96,7 @@ public class UserAdminController {
     /**
      * 정지 중인 유저 목록을 조회합니다.
      * 현재 정지 상태인 유저들의 목록을 반환하며, releaseAt이 미래이거나 null인 경우만 포함됩니다.
-     * @return
+     * @return 정지 중인 유저들의 목록
      */
     @Operation(
             summary = "정지 중인 유저 목록 조회",
@@ -116,8 +115,8 @@ public class UserAdminController {
 
     /**
      * 특정 유저의 정지 이력을 조회합니다.
-     * @param userId
-     * @return
+     * @param userId 정지 이력을 조회할 유저의 ID
+     * @return 특정 유저의 정지 이력 목록
      */
     @Operation(
             summary = "특정 유저의 정지 이력 조회",
