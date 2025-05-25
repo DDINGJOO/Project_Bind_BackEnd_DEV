@@ -14,7 +14,6 @@ import security.exception.SecurityErrorCode;
 
 import java.security.Key;
 import java.util.Date;
-import java.util.UUID;
 
 @Slf4j
 @Component
@@ -29,38 +28,43 @@ public class JwtProvider {
         this.key = Keys.hmacShaKeyFor(jwtProperties.getSecret().getBytes());
     }
 
-    public String createAccessToken(String userId) {
-        return createToken(userId, jwtProperties.getAccessTokenValidity());
+    public String createAccessToken(TokenParam param) {
+        return createToken(param, jwtProperties.getAccessTokenValidity());
     }
 
-    public String createRefreshToken(String userId) {
-        return createToken(userId, jwtProperties.getRefreshTokenValidity());
+    public String createRefreshToken(TokenParam param) {
+        return createToken(param, jwtProperties.getRefreshTokenValidity());
     }
 
-    private String createToken(String userId, long validityMs) {
+    private String createToken(TokenParam param, long validityMs) {
         Date now = new Date();
         Date expiry = new Date(now.getTime() + validityMs);
 
         return Jwts.builder()
-                .setSubject(userId)
+                .setSubject(param.userId())
+                .claim("role", param.role())
                 .setIssuedAt(now)
                 .setExpiration(expiry)
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }
-
-    public UUID getUserIdFromTokenOrThrow(String token) {
+    public String getUserIdFromToken(String token) {
         try {
-            String userId = Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
-                    .parseClaimsJws(token)
-                    .getBody()
-                    .getSubject();
-            return UUID.fromString(userId);
+            Claims claims = decodeToken(token);
+            return claims.getSubject();
         } catch (JwtException | IllegalArgumentException e) {
             log.error("JWT parsing failed: {}", e.getMessage());
-            throw new RuntimeException("Invalid token");
+            throw new security.exception.SecurityException(SecurityErrorCode.TOKEN_INVALID.getMessage(), SecurityErrorCode.TOKEN_INVALID);
+        }
+    }
+
+    public String getRoleFromToken(String token) {
+        try {
+            Claims claims = decodeToken(token);
+            return claims.get("role", String.class);
+        } catch (JwtException | IllegalArgumentException e) {
+            log.error("JWT parsing failed: {}", e.getMessage());
+            throw new security.exception.SecurityException(SecurityErrorCode.TOKEN_INVALID.getMessage(), SecurityErrorCode.TOKEN_INVALID);
         }
     }
 
@@ -88,9 +92,9 @@ public class JwtProvider {
                     .parseClaimsJws(storedToken)
                     .getBody();
         } catch (ExpiredJwtException e) {
-            throw new SecurityException(String.valueOf(SecurityErrorCode.TOKEN_EXPIRED));
+            throw new security.exception.SecurityException(SecurityErrorCode.TOKEN_EXPIRED.getMessage(), SecurityErrorCode.TOKEN_EXPIRED);
         } catch (JwtException e) {
-            throw new SecurityException(String.valueOf(SecurityErrorCode.TOKEN_INVALID));
+            throw new security.exception.SecurityException(SecurityErrorCode.TOKEN_INVALID.getMessage(), SecurityErrorCode.TOKEN_INVALID);
         }
     }
 }

@@ -28,6 +28,6 @@ public class UserRole {
 
     private LocalDateTime grantedAt;
 
-    private String grantedBy;//한국어로 "부여자 UUID"를 의미합니다. 이 필드는 사용자가 역할을 부여받은 사람의 UUID를 저장합니다.
+    private String grantedBy;// "부여자 UUID"를 의미합니다. 이 필드는 사용자가 역할을 부여받은 사람의 UUID를 저장합니다.
 }
 

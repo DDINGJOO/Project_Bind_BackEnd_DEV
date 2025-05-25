@@ -30,7 +30,8 @@ public enum AuthErrorCode implements ErrorCode {
     BLOCK_NOT_FOUND("AUTH_010", "차단 내역이 존재하지 않습니다.", 404),
 
     // 기타
-    INTERNAL_ERROR("AUTH_999", "알 수 없는 인증 오류가 발생했습니다.", 500);
+    INTERNAL_ERROR("AUTH_999", "알 수 없는 인증 오류가 발생했습니다.", 500),
+    USER_ROLE_NOT_FOUND("AUTH_012", "사용자 역할을 찾을 수 없습니다.", 404);
 
     private final String code;
     private final String message;

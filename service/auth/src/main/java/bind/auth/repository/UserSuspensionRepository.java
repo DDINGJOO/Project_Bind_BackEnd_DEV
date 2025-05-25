@@ -3,6 +3,7 @@ package bind.auth.repository;
 import bind.auth.entity.UserSuspension;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -17,4 +18,8 @@ public interface UserSuspensionRepository extends JpaRepository<UserSuspension, 
      * 유저의 정지 이력 전체 조회
      */
     Optional<UserSuspension> findTopByUserIdOrderBySuspendedAtDesc(String userId);
+
+    List<UserSuspension> findByIsActiveTrue();
+
+    List<UserSuspension> findByUserId(String userId);
 }

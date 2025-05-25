@@ -2,10 +2,7 @@ package bind.auth.service;
 
 
 
-import bind.auth.dto.request.LoginRequest;
-import bind.auth.dto.request.PasswordChangeRequest;
-import bind.auth.dto.request.RegisterRequest;
-import bind.auth.dto.request.WithdrawRequest;
+import bind.auth.dto.request.*;
 import bind.auth.dto.response.LoginResponse;
 import bind.auth.entity.*;
 import bind.auth.exception.AuthErrorCode;
@@ -21,11 +18,13 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import security.jwt.JwtProvider;
+import security.jwt.TokenParam;
 import util.PkProvider;
 
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -50,6 +49,7 @@ public class AuthService {
         User user = userRepository.findByLoginId(request.loginId())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 
+
         if (!user.isActive()) {
             throw new AuthException(AuthErrorCode.DEACTIVATED_USER.getMessage(), AuthErrorCode.DEACTIVATED_USER);
         }
@@ -63,8 +63,9 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.SUSPENDED_USER.getMessage(), AuthErrorCode.SUSPENDED_USER);
         }
 
-        String accessToken = tokenProvider.createAccessToken(user.getId());
-        String refreshToken = tokenProvider.createRefreshToken(user.getId());
+        TokenParam param = tokenParams(user.getId());
+        String accessToken = tokenProvider.createAccessToken(param);
+        String refreshToken = tokenProvider.createRefreshToken(param);
 
         // Redis 저장
         redisService.saveRefreshToken(user.getId(), request.deviceId(), refreshToken, Duration.ofDays(14));
@@ -98,7 +99,7 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.PASSWORD_NOT_MATCHED.getMessage(), AuthErrorCode.PASSWORD_NOT_MATCHED);
         }
 
-        if(!passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+        if(passwordEncoder.matches(request.newPassword(), user.getPassword())) {
             throw new AuthException(AuthErrorCode.CURRENT_PASSWORD_MATCHED.getMessage(), AuthErrorCode.CURRENT_PASSWORD_MATCHED);
         }
 
@@ -147,8 +148,12 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN.getMessage(), AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        String newAccessToken = tokenProvider.createAccessToken(userId);
-        String newRefreshToken = tokenProvider.createRefreshToken(userId);
+        UserRole role = userRoleRepository.findByUserId(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_ROLE_NOT_FOUND.getMessage(), AuthErrorCode.USER_ROLE_NOT_FOUND));
+
+        TokenParam param = tokenParams(userId);
+        String newAccessToken = tokenProvider.createAccessToken(param);
+        String newRefreshToken = tokenProvider.createRefreshToken(param);
 
         redisService.saveRefreshToken(userId, deviceId, newRefreshToken, Duration.ofDays(14));
 
@@ -172,7 +177,9 @@ public class AuthService {
         userLoginLogRepository.save(log);
     }
     public void updateRefreshToken(String userId, String deviceId, String ip, String userAgent) {
-        String newRefreshToken = tokenProvider.createRefreshToken(userId);
+
+        String newRefreshToken = tokenProvider.createRefreshToken(tokenParams(userId));
+
 
         // DB 갱신
         Optional<RefreshToken> existing = refreshTokenRepository.findByUserIdAndDeviceId(userId, deviceId);
@@ -207,6 +214,12 @@ public class AuthService {
                 .reason(request.reason())
                 .withdrawAt(LocalDateTime.now())
                 .build());
+    }
+
+    private TokenParam tokenParams(String userId) {
+        UserRole role = userRoleRepository.findByUserId(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_ROLE_NOT_FOUND.getMessage(), AuthErrorCode.USER_ROLE_NOT_FOUND));
+        return new TokenParam(userId, role.getRole().name());
     }
 
 }
