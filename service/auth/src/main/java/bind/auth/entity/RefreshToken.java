@@ -2,6 +2,7 @@ package bind.auth.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.GenericGenerator;
 
 import java.time.LocalDateTime;
 @Entity
@@ -13,8 +14,10 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class RefreshToken {
 
+
     @Id
-    private String userId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", insertable = false, updatable = false)

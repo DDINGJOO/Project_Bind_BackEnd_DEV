@@ -179,6 +179,8 @@ public class AuthService {
     public void updateRefreshToken(String userId, String deviceId, String ip, String userAgent) {
 
         String newRefreshToken = tokenProvider.createRefreshToken(tokenParams(userId));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 
 
         // DB 갱신
@@ -188,7 +190,7 @@ public class AuthService {
             refreshTokenRepository.save(existing.get());
         } else {
             RefreshToken tokenEntity = RefreshToken.builder()
-                    .userId(userId)
+                    .user(user)
                     .deviceId(deviceId)
                     .clientIp(ip)
                     .userAgent(userAgent)
