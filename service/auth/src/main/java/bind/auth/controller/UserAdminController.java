@@ -13,14 +13,17 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@Tag(name = "Admin User Control", description = "관리자용 사용자 정지/해제 관련 API")
+
+@PreAuthorize("hasRole('ADMIN')")
 @RestController
-@RequestMapping("/api/admin/user")
+@RequestMapping("/api/admin/suspensions")
 @RequiredArgsConstructor
+@Tag(name = "User Suspension", description = "유저 정지 관리 API (관리자 전용)")
 public class UserAdminController {
 
     private final UserSuspensionService suspensionService;
