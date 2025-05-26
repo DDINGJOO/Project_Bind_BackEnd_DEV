@@ -10,7 +10,7 @@ import bind.auth.exception.AuthException;
 
 import bind.auth.repository.*;
 
-import data.enums.auth.ConsentType;
+
 import data.enums.auth.ProviderType;
 import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private  final JwtProvider tokenProvider;
     private final UserRoleRepository userRoleRepository;
-    private final ConsentHistoryRepository consentHistoryRepository;
+
 
     private final UserSuspensionService userSuspensionService;
     private final WithdrawHistoryRepository withdrawHistoryRepository;
@@ -262,7 +262,7 @@ public class AuthService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 
-        if(user.isEmailVerified() == true) {
+        if(user.isEmailVerified()) {
             throw new AuthException(AuthErrorCode.ALREADY_VERIFIED.getMessage(), AuthErrorCode.ALREADY_VERIFIED);
         }
         user.setEmailVerified(true);
