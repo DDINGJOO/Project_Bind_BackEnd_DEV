@@ -3,7 +3,9 @@ package bind.auth.controller;
 import bind.auth.dto.request.UserSuspensionRequest;
 import bind.auth.dto.response.UserReportResponse;
 import bind.auth.dto.response.UserSuspensionStatusResponse;
+import bind.auth.entity.UserLoginLog;
 import bind.auth.exception.AuthException;
+import bind.auth.service.AuthService;
 import bind.auth.service.UserReportService;
 import bind.auth.service.UserSuspensionService;
 import data.BaseResponse;
@@ -14,11 +16,13 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.apache.tomcat.util.http.parser.Authorization;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +36,7 @@ public class UserAdminController {
 
     private final UserSuspensionService suspensionService;
     private final UserReportService userReportService;
+    private final AuthService authService;
 
     /**
      * 유저를 일정 기간 동안 정지하거나 영구 정지합니다.
@@ -157,6 +162,23 @@ public class UserAdminController {
     ) {
         Pageable pageable = PageRequest.of(page, size, Sort.by("reportedAt").descending());
         return ResponseEntity.ok(userReportService.getReports(pageable));
+    }
+
+    @GetMapping("/login-logs")
+    @Operation(
+            summary = "로그인 로그 조회",
+            description = "사용자 로그인 로그를 페이지 단위로 조회합니다. 최신 로그인부터 정렬됩니다.",
+            responses = {
+                    @ApiResponse(responseCode = "200", description = "로그인 로그 조회 성공"),
+                    @ApiResponse(responseCode = "500", description = "서버 오류", content = @Content)
+            }
+    )
+    public ResponseEntity<Page<UserLoginLog>> getLoginLogs(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("loginAt").descending());
+        return ResponseEntity.ok(authService.getLoginLogs(pageable));
     }
 
 }

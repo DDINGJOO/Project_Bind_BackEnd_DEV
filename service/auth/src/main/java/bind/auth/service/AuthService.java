@@ -14,6 +14,9 @@ import data.enums.auth.ProviderType;
 import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,11 +58,12 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            logLoginAttempt(user, ip, userAgent, false);
+            logLoginAttempt(user, ip, userAgent, request.deviceId(),false, AuthErrorCode.PASSWORD_NOT_MATCHED.getMessage());
             throw new AuthException(AuthErrorCode.PASSWORD_NOT_MATCHED.getMessage(), AuthErrorCode.PASSWORD_NOT_MATCHED);
         }
 
         if (userSuspensionService.isCurrentlySuspended(user.getId())) {
+            logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.SUSPENDED_USER.getMessage());
             throw new AuthException(AuthErrorCode.SUSPENDED_USER.getMessage(), AuthErrorCode.SUSPENDED_USER);
         }
 
@@ -80,7 +84,7 @@ public class AuthService {
                 .build();
         refreshTokenRepository.save(entity);
 
-        logLoginAttempt(user, ip, userAgent, true);
+        logLoginAttempt(user, ip, userAgent, request.deviceId(),true, "Login successful");
 
         return new LoginResponse(accessToken, refreshToken);
     }
@@ -148,9 +152,6 @@ public class AuthService {
             throw new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN.getMessage(), AuthErrorCode.INVALID_REFRESH_TOKEN);
         }
 
-        UserRole role = userRoleRepository.findByUserId(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_ROLE_NOT_FOUND.getMessage(), AuthErrorCode.USER_ROLE_NOT_FOUND));
-
         TokenParam param = tokenParams(userId);
         String newAccessToken = tokenProvider.createAccessToken(param);
         String newRefreshToken = tokenProvider.createRefreshToken(param);
@@ -166,16 +167,22 @@ public class AuthService {
         return new LoginResponse(newAccessToken, newRefreshToken);
     }
 
-    private void logLoginAttempt(User user, String ip, String userAgent, boolean success) {
+    private void logLoginAttempt(User user, String ip, String userAgent,String deviceId, boolean success, String reason) {
         UserLoginLog log = UserLoginLog.builder()
                 .user(user)
                 .ipAddress(ip)
                 .userAgent(userAgent)
+                .reason(reason)
+                .deviceId(deviceId) // Assuming deviceId is the userId for simplicity
                 .success(success)
                 .loginAt(LocalDateTime.now())
                 .build();
         userLoginLogRepository.save(log);
     }
+
+
+
+    @Transactional
     public void updateRefreshToken(String userId, String deviceId, String ip, String userAgent) {
 
         String newRefreshToken = tokenProvider.createRefreshToken(tokenParams(userId));
@@ -224,6 +231,8 @@ public class AuthService {
         return new TokenParam(userId, role.getRole().name());
     }
 
-
+    public Page<UserLoginLog> getLoginLogs(Pageable pageable) {
+        return userLoginLogRepository.findAll(pageable);
+    }
 
 }

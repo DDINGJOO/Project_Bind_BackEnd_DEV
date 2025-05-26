@@ -22,6 +22,7 @@ public class UserLoginLog {
     private String ipAddress;
     private String userAgent;
     private boolean success;
+    private String deviceId;
     private String reason;
     private String geoLocation;
     private LocalDateTime loginAt;
