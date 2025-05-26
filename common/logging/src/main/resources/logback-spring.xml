@@ -1,0 +1,20 @@
+<configuration>
+    <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/app.json</file>
+        <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
+            <providers>
+                <timestamp />
+                <logLevel />
+                <loggerName />
+                <threadName />
+                <message />
+                <mdc /> <!-- MDC에 넣은 traceId, latencyMs 등 자동 포함 -->
+                <stackTrace />
+            </providers>
+        </encoder>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="JSON_FILE"/>
+    </root>
+</configuration>

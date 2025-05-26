@@ -4,11 +4,16 @@ package bind.mail;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
+import org.springframework.context.annotation.ComponentScan;
 
 
 @SpringBootApplication(
         exclude = {SecurityAutoConfiguration.class}
 )
+@ComponentScan(basePackages = {
+        "bind.mail",              // 기본 패키지
+        "security"                // 공통 security 모듈
+})
 public class MailApplication {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure()
