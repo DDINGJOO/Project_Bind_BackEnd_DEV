@@ -9,3 +9,4 @@ include 'common:security'
 
 include 'service'
 include 'service:auth'
+include 'service:mail'

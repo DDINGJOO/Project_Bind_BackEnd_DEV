@@ -10,6 +10,7 @@ import bind.auth.exception.AuthException;
 
 import bind.auth.repository.*;
 
+import data.enums.auth.ConsentType;
 import data.enums.auth.ProviderType;
 import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private  final JwtProvider tokenProvider;
     private final UserRoleRepository userRoleRepository;
+    private final ConsentHistoryRepository consentHistoryRepository;
 
     private final UserSuspensionService userSuspensionService;
     private final WithdrawHistoryRepository withdrawHistoryRepository;
@@ -51,7 +53,15 @@ public class AuthService {
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 
 
+
+        if(!user.isEmailVerified()){
+            logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.EMAIL_NOT_VERIFIED.getMessage());
+            throw new AuthException(AuthErrorCode.EMAIL_NOT_VERIFIED.getMessage(), AuthErrorCode.EMAIL_NOT_VERIFIED);
+        }
+
+
         if (!user.isActive()) {
+            logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.DEACTIVATED_USER.getMessage());
             throw new AuthException(AuthErrorCode.DEACTIVATED_USER.getMessage(), AuthErrorCode.DEACTIVATED_USER);
         }
 
@@ -64,6 +74,8 @@ public class AuthService {
             logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.SUSPENDED_USER.getMessage());
             throw new AuthException(AuthErrorCode.SUSPENDED_USER.getMessage(), AuthErrorCode.SUSPENDED_USER);
         }
+
+
 
         TokenParam param = tokenParams(user.getId());
         String accessToken = tokenProvider.createAccessToken(param);
@@ -83,6 +95,9 @@ public class AuthService {
         refreshTokenRepository.save(entity);
 
         logLoginAttempt(user, ip, userAgent, request.deviceId(),true, "Login successful");
+        user.setLoginFailCount(0);
+        user.setLastLoginAt(LocalDateTime.now());
+        userRepository.save(user);
 
         return new LoginResponse(accessToken, refreshToken);
     }
@@ -123,10 +138,14 @@ public class AuthService {
         if (userRepository.existsByLoginId(request.loginId())) {
             throw new AuthException(AuthErrorCode.DUPLICATE_LOGIN_ID.getMessage(), AuthErrorCode.DUPLICATE_LOGIN_ID);
         }
+        if (userRepository.existsByEmail(request.email())) {
+            throw new AuthException(AuthErrorCode.DUPLICATE_EMAIL.getMessage(), AuthErrorCode.DUPLICATE_EMAIL);
+        }
 
         User user = User.builder()
                 .id(PkProvider.getInstance().generate())
                 .loginId(request.loginId())
+                .email(request.email())
                 .password(passwordEncoder.encode(request.password()))
                 .provider(ProviderType.valueOf("LOCAL"))
                 .isSocialOnly(false)
@@ -135,6 +154,9 @@ public class AuthService {
                 .build();
 
         userRepository.save(user);
+
+
+
 
         UserRole role = new UserRole(
                 user,

@@ -20,7 +20,8 @@ public class User {
 
     @Column(name = "login_id", nullable = false, unique = true)
     private String loginId;
-
+    @Column(name = "email", nullable = false, unique = true)
+    private String email;
     private String password;
 
     @Enumerated(EnumType.STRING)
@@ -28,6 +29,7 @@ public class User {
 
     private boolean isSocialOnly;
     private boolean isActive = true;
+    private boolean isEmailVerified = false;
     private int loginFailCount;
     private LocalDateTime accountLockedUntil;
     private LocalDateTime lastLoginAt;

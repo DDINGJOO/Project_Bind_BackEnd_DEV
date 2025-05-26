@@ -31,7 +31,13 @@ public enum AuthErrorCode implements ErrorCode {
 
     // 기타
     INTERNAL_ERROR("AUTH_999", "알 수 없는 인증 오류가 발생했습니다.", 500),
-    USER_ROLE_NOT_FOUND("AUTH_012", "사용자 역할을 찾을 수 없습니다.", 404);
+    USER_ROLE_NOT_FOUND("AUTH_012", "사용자 역할을 찾을 수 없습니다.", 404),
+    DUPLICATE_EMAIL("AUTH_013", "이미 사용 중인 이메일입니다.", 409),
+
+
+    EMAIL_NOT_VERIFIED("AUTH_014", "이메일이 인증되지 않았습니다.", 403),
+
+    ;
 
     private final String code;
     private final String message;

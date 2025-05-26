@@ -1,14 +1,12 @@
 package bind.auth.service;
 
 
-import bind.auth.dto.request.LoginRequest;
-import bind.auth.dto.request.PasswordChangeRequest;
-import bind.auth.dto.request.RegisterRequest;
-import bind.auth.dto.request.WithdrawRequest;
+import bind.auth.dto.request.*;
 import bind.auth.dto.response.LoginResponse;
 import bind.auth.entity.*;
 import bind.auth.exception.AuthException;
 import bind.auth.repository.*;
+import data.enums.auth.ConsentType;
 import data.enums.auth.ProviderType;
 import data.enums.auth.UserRoleType;
 import exception.BaseException;
@@ -26,6 +24,7 @@ import security.jwt.TokenParam;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -52,6 +51,8 @@ class AuthServiceTest {
     @Mock private UserSuspensionService userSuspensionService;
     @Mock private PasswordHistoryRepository passwordHistoryRepository;
     @Mock private WithdrawHistoryRepository withdrawHistoryRepository;
+    @Mock private ConsentHistoryRepository consentHistoryRepository;
+    @Mock private ConsentRequest consentRequest;
 
     private final String userId = UUID.randomUUID().toString();
     private final String rawPassword = "rawPass123";
@@ -62,6 +63,9 @@ class AuthServiceTest {
 
     private User mockUser;
     private UserRole mockRole;
+
+    private ConsentRequest mockConsentRequest;
+
 
     private final TokenParam tokenParam = TokenParam.builder()
             .userId(userId)
@@ -82,6 +86,13 @@ class AuthServiceTest {
                 .user(mockUser)
                 .role(UserRoleType.USER)
                 .build();
+
+
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(mockUser));
+        when(passwordEncoder.encode(rawPassword)).thenReturn(encodedPassword);
+        when(passwordEncoder.matches(anyString(), anyString())).thenReturn(true);
+
 
     }
 
@@ -146,7 +157,7 @@ class AuthServiceTest {
         when(userRepository.existsByLoginId("newUser")).thenReturn(false);
         when(passwordEncoder.encode(any())).thenReturn("encodedPwd");
 
-        RegisterRequest request = new RegisterRequest("newUser", "pass123");
+        RegisterRequest request = new RegisterRequest("newUser", "pass123","temp@mail.com");
         authService.register(request);
 
         verify(userRepository).save(any(User.class));
@@ -158,7 +169,7 @@ class AuthServiceTest {
     void register_duplicateLoginId() {
         when(userRepository.existsByLoginId("testUser")).thenReturn(true);
 
-        assertThatThrownBy(() -> authService.register(new RegisterRequest("testUser", "1234")))
+        assertThatThrownBy(() -> authService.register(new RegisterRequest("testUser", "1234","teap@mail.com")))
                 .isInstanceOf(AuthException.class)
                 .hasMessageContaining(AuthErrorCode.DUPLICATE_LOGIN_ID.getMessage());
     }

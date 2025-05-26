@@ -1,0 +1,19 @@
+dependencies {
+    implementation project(':common:exception')
+    implementation project(':common:util')
+    implementation project(':common:security')
+    implementation project(':common:data')
+    implementation project(':common:event')
+
+
+    // Spring Boot Starter for Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+
+    implementation "org.springframework.boot:spring-boot-starter-thymeleaf"
+
+
+
+    // Additional dependencies can be added here
+}
