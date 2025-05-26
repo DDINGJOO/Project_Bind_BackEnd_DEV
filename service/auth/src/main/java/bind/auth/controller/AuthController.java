@@ -90,17 +90,17 @@ public class AuthController {
 
     /**
      * 비밀번호 변경 API
-     * @param userId 사용자 ID
+     * @param logindId 사용자 로그인ID
      * @param request 비밀번호 변경 요청 (현재 비밀번호, 새 비밀번호)
      */
     @Operation(summary = "비밀번호 변경", description = "현재 비밀번호를 새 비밀번호로 변경합니다.")
     @PutMapping("/change-password")
     public ResponseEntity<BaseResponse<Void>> changePassword(
-            @RequestParam String userId,
+            @RequestParam String logindId,
             @RequestBody @Valid PasswordChangeRequest request
     ) {
         try {
-            authService.changePassword(userId, request);
+            authService.changePassword(logindId, request);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
@@ -143,6 +143,20 @@ public class AuthController {
         try {
             String userId = jwtProvider.getUserIdFromToken(bearerToken);
             return ResponseEntity.ok(BaseResponse.success(userId));
+        } catch (AuthException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.error("알 수 없는 오류가 발생했습니다."));
+        }
+    }
+
+    @PostMapping("/confirm-email")
+    public ResponseEntity<BaseResponse<Void>> confirmEmail(
+            @RequestParam String userId
+    ) {
+        try {
+            authService.confirmEmail(userId);
+            return ResponseEntity.ok(BaseResponse.success());
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
         } catch (Exception e) {

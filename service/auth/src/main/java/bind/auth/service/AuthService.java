@@ -108,8 +108,8 @@ public class AuthService {
     }
 
     @Transactional
-    public void changePassword(String userId, PasswordChangeRequest request) {
-        User user = userRepository.findById(userId)
+    public void changePassword(String loginId, PasswordChangeRequest request) {
+        User user = userRepository.findByLoginId(loginId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 
         if (!passwordEncoder.matches(request.newPassword(), request.newPasswordCheck())) {
@@ -255,4 +255,17 @@ public class AuthService {
         return userLoginLogRepository.findAll(pageable);
     }
 
+
+
+    @Transactional
+    public void confirmEmail(String userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
+
+        if(user.isEmailVerified() == true) {
+            throw new AuthException(AuthErrorCode.ALREADY_VERIFIED.getMessage(), AuthErrorCode.ALREADY_VERIFIED);
+        }
+        user.setEmailVerified(true);
+        userRepository.save(user);
+    }
 }

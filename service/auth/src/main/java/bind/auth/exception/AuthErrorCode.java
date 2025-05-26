@@ -37,6 +37,9 @@ public enum AuthErrorCode implements ErrorCode {
 
     EMAIL_NOT_VERIFIED("AUTH_014", "이메일이 인증되지 않았습니다.", 403),
 
+    ALREADY_VERIFIED("AUTH_015", "이미 인증된 이메일입니다.", 400),
+    EMAIL_NOT_FOUND("AUTH_016", "가입하지 않은 이메일 입니다.", 400)
+
     ;
 
     private final String code;
