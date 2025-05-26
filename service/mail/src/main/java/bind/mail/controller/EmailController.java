@@ -25,7 +25,7 @@ public class EmailController {
     public ResponseEntity sendPasswordMail(@RequestBody MailTxtSendDto emailPostDto) {
         MailTxtSendDto emailMessage = MailTxtSendDto.builder()
                 .emailAddr(emailPostDto.emailAddr())
-                .subject("[SAVIEW] 임시 비밀번호 발급")
+                .subject("[Bander] 임시 비밀번호 발급")
                 .content(emailPostDto.content())
                 .build();
 
@@ -39,7 +39,7 @@ public class EmailController {
     public ResponseEntity sendJoinMail(@RequestBody MailTxtSendDto emailPostDto) {
         MailTxtSendDto emailMessage = MailTxtSendDto.builder()
                 .emailAddr(emailPostDto.emailAddr())
-                .subject("[SAVIEW] 이메일 인증을 위한 인증 코드 발송")
+                .subject("[Bander] 이메일 인증을 위한 인증 코드 발송")
                 .content(emailPostDto.content())
                 .build();
 

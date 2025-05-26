@@ -24,7 +24,7 @@ public class EmailService {
 
 
 
-    public String sendMail(MailTxtSendDto emailMessage, String type) {
+    public String sendMail(MailTxtSendDto emailMessage,String codeType) {
         String authNum = createCode();
 
         MimeMessage mimeMessage = javaMailSender.createMimeMessage();

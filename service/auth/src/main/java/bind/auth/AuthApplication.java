@@ -16,7 +16,8 @@ import security.jwt.JwtProperties;
 @EnableConfigurationProperties(JwtProperties.class)
 @ComponentScan(basePackages = {
         "bind.auth",              // 기본 패키지
-        "security"                // 공통 security 모듈
+        "security",                // 공통 security 모듈
+        "logging"
 })
 public class AuthApplication {
 

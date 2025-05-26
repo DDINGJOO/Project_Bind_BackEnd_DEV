@@ -1,20 +1,41 @@
 <configuration>
+
+    <!-- 콘솔 로그 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} %-5level [%thread] %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- JSON 파일 로그 -->
     <appender name="JSON_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>logs/app.json</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>logs/app-%d{yyyy-MM-dd}.json</fileNamePattern>
+            <maxHistory>7</maxHistory>
+        </rollingPolicy>
         <encoder class="net.logstash.logback.encoder.LoggingEventCompositeJsonEncoder">
             <providers>
                 <timestamp />
                 <logLevel />
                 <loggerName />
+                <callerData />
                 <threadName />
                 <message />
-                <mdc /> <!-- MDC에 넣은 traceId, latencyMs 등 자동 포함 -->
+                <mdc />
                 <stackTrace />
             </providers>
         </encoder>
     </appender>
 
+    <!-- 루트: 콘솔만 -->
     <root level="INFO">
-        <appender-ref ref="JSON_FILE"/>
+        <appender-ref ref="CONSOLE"/>
     </root>
+
+    <!-- 내가 만든 코드 로그만 JSON 파일로 추가 출력 -->
+    <logger name="bind" level="INFO" additivity="false">
+        <appender-ref ref="JSON_FILE" />
+    </logger>
+
 </configuration>
