@@ -4,13 +4,16 @@ import bind.auth.dto.request.LoginRequest;
 import bind.auth.dto.request.PasswordChangeRequest;
 import bind.auth.dto.request.RegisterRequest;
 import bind.auth.dto.response.LoginResponse;
+import bind.auth.entity.User;
 import bind.auth.exception.AuthException;
 import bind.auth.service.AuthService;
+import bind.auth.service.EventPubService;
 import data.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import security.jwt.JwtProvider;
@@ -22,9 +25,11 @@ import security.jwt.JwtProvider;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Slf4j
 public class AuthController {
 
     private final AuthService authService;
+    private final EventPubService eventPubService;
     private final JwtProvider jwtProvider;
 
     /**
@@ -34,14 +39,23 @@ public class AuthController {
     @Operation(summary = "회원가입", description = "새로운 사용자를 등록합니다.")
     @PostMapping("/register")
     public ResponseEntity<BaseResponse<Void>> register(@RequestBody @Valid RegisterRequest request) {
+        log.info("Call Resister");
+        User user;
         try {
-            authService.register(request);
-            return ResponseEntity.ok(BaseResponse.success());
+            user = authService.register(request);
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(BaseResponse.error("알 수 없는 오류가 발생했습니다."));
+            return ResponseEntity.internalServerError().body(BaseResponse.error("AuthService를 수행하는중 발생했습니다."));
         }
+        try{
+            eventPubService.kafkaEmailVerification(user);
+        } catch (AuthException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.error("카프카 메세지 발행 중 오류가 발생했습니다."));
+        }
+        return ResponseEntity.ok(BaseResponse.success());
     }
 
     /**
@@ -150,12 +164,12 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/confirm-email")
+    @PostMapping("/verify-email")
     public ResponseEntity<BaseResponse<Void>> confirmEmail(
-            @RequestParam String userId
+            @RequestParam String token
     ) {
         try {
-            authService.confirmEmail(userId);
+            authService.confirmEmail(token);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));

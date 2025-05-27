@@ -11,6 +11,7 @@ import bind.auth.exception.AuthException;
 import bind.auth.repository.*;
 
 
+
 import data.enums.auth.ProviderType;
 import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
@@ -51,8 +52,6 @@ public class AuthService {
     public LoginResponse login(LoginRequest request, String ip, String userAgent) {
         User user = userRepository.findByLoginId(request.loginId())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
-
-
 
         if(!user.isEmailVerified()){
             logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.EMAIL_NOT_VERIFIED.getMessage());
@@ -134,7 +133,7 @@ public class AuthService {
     }
 
     @Transactional
-    public void register(RegisterRequest request) {
+    public User register(RegisterRequest request) {
         if (userRepository.existsByLoginId(request.loginId())) {
             throw new AuthException(AuthErrorCode.DUPLICATE_LOGIN_ID.getMessage(), AuthErrorCode.DUPLICATE_LOGIN_ID);
         }
@@ -156,8 +155,6 @@ public class AuthService {
         userRepository.save(user);
 
 
-
-
         UserRole role = new UserRole(
                 user,
                 new UserRoleId(user.getId(), UserRoleType.USER).getRole(),
@@ -165,7 +162,13 @@ public class AuthService {
                 "System"
         );
         userRoleRepository.save(role);
+        return user;
+
     }
+
+
+
+
 
     public LoginResponse refresh(String userId, String deviceId, String refreshToken) {
         if (!redisService.validateRefreshToken(userId, deviceId, refreshToken)) {
@@ -245,7 +248,7 @@ public class AuthService {
                 .build());
     }
 
-    private TokenParam tokenParams(String userId) {
+    public TokenParam tokenParams(String userId) {
         UserRole role = userRoleRepository.findByUserId(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_ROLE_NOT_FOUND.getMessage(), AuthErrorCode.USER_ROLE_NOT_FOUND));
         return new TokenParam(userId, role.getRole().name());
@@ -258,7 +261,8 @@ public class AuthService {
 
 
     @Transactional
-    public void confirmEmail(String userId) {
+    public void confirmEmail(String token) {
+        String userId = tokenProvider.getUserIdFromToken(token);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 

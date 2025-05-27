@@ -5,6 +5,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.kafka.annotation.EnableKafka;
 
 
 @SpringBootApplication(
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.ComponentScan;
         "bind.mail",              // 기본 패키지
         "security"                // 공통 security 모듈
 })
+@EnableKafka
 public class MailApplication {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure()

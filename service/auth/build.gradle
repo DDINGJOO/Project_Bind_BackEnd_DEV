@@ -14,11 +14,11 @@ dependencies {
     runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5' // JSON 파서 (jackson)
     implementation project(":common")
     implementation project(":common:data")
-    implementation project(":common:event")
     implementation project(":common:exception")
     implementation project (":common:util")
     implementation project(':common:security')
     implementation project(':common:logging')
+    implementation project(':common:event')
 
 
     implementation 'com.h2database:h2'

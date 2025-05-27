@@ -17,7 +17,8 @@ import security.jwt.JwtProperties;
 @ComponentScan(basePackages = {
         "bind.auth",              // 기본 패키지
         "security",                // 공통 security 모듈
-        "logging"
+        "logging",
+        "event",                // 이벤트 모듈
 })
 public class AuthApplication {
 
@@ -31,6 +32,8 @@ public class AuthApplication {
         dotenv.entries().forEach(entry ->
                 System.setProperty(entry.getKey(), entry.getValue())
         );
+
+
 
         SpringApplication.run(AuthApplication.class, args);
     }

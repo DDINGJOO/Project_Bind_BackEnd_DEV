@@ -1,6 +1,6 @@
-package payload;
+package event.payload;
 
-import event.EventPayload;
+import event.events.EventPayload;
 import lombok.*;
 
 import java.io.Serializable;

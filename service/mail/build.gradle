@@ -3,7 +3,8 @@ dependencies {
     implementation project(':common:util')
     implementation project(':common:security')
     implementation project(':common:data')
-    implementation project(':common:event')
+    implementation project(':common:logging')
+    implementation project(":common:event")
 
 
     // Spring Boot Starter for Mail

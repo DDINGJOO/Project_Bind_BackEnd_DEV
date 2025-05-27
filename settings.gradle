@@ -2,11 +2,12 @@ rootProject.name = 'backend'
 
 include 'common'
 include 'common:data'
-include 'common:event'
+
 include 'common:exception'
 include 'common:util'
 include 'common:security'
 include 'common:logging'
+include 'common:event'
 
 
 include 'service'

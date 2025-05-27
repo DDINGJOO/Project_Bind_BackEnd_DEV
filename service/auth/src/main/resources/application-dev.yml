@@ -2,6 +2,21 @@ server:
   port: ${AUTH_SEVER_PORT}
 
 spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP} # e.g. localhost:9093
+
+    consumer:
+      group-id: auth-consumer-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"  # 또는 event.events, event.payload 등 명확히
+        spring.json.use.type.headers: false  # 명시적으로 꺼둠
+        spring.json.value.default.type: event.events.Event  # 항상 Event<T> 구조로 역직렬화
+
+    listener:
+      ack-mode: manual_immediate
+
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${AUTH_MYSQL_DB}
     username: ${MYSQL_USER}
@@ -16,8 +31,7 @@ spring:
       hibernate:
         format_sql: true
 
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP}
+
 
   data:
     redis:

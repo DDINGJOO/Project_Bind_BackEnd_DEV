@@ -1,19 +1,34 @@
 server:
   port: ${MAIL_SEVER_PORT}
 
-
 spring:
-  application:
-    name: bind.mail
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP}  # 예: localhost:9093
+
+    consumer:
+      group-id: mail-consumer-group
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "event.events,event.payload"
+        spring.json.use.type.headers: false
+        spring.json.value.default.type: event.events.Event
+
+    listener:
+      ack-mode: manual_immediate  # 수동 커밋, 안정적 메시지 처리
+      missing-topics-fatal: false  # topic 없어도 부트 실패 안 하게
+
   mail:
-    host: smtp.gmail.com          # 구글 SMTP 서버 주소
-    port: 587                     # 구글 SMTP 포트 번호
-    username: ${EMAIL} # 사용자 이메일
-    password: ${EMAIL_PASSWORD} # 사용자 앱 비밀번호
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL}
+    password: ${EMAIL_PASSWORD}
     properties:
-      mail:
-        smtp:
-          auth: true              # 사용자 인증 여부
-          timeout: 5000           # 이메일 전송 타임아웃 시간
-          starttls:
-            enable: true          # TLS를 통해 안전한 통신 사용 여부
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+
+logging:
+  level:
+    org.springframework.kafka: INFO
+    bind.mail: DEBUG
