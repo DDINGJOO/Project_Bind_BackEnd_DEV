@@ -1,0 +1,31 @@
+server:
+  port: ${IMAGE_SEVER_PORT}
+
+spring:
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP}  # 예: localhost:9093
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${AUTH_MYSQL_DB}
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update # 또는 create, create-drop, none, validate
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+
+
+logging:
+  level:
+    org.springframework.kafka: INFO
+    bind.mail: DEBUG
+app:
+    kafka:
+      event-topics: user-registered-topic,email-verification-topic,user-login-topic,user-withdrawal-topic
+      consumer-group: image-service-group
+
