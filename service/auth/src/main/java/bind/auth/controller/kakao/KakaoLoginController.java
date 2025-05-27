@@ -25,7 +25,7 @@ import java.util.Map;
 @Slf4j
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/kakao")
+@RequestMapping("/oauth2/callback")
 public class KakaoLoginController {
 
     private final KaKaoOauthService kakaoService;
@@ -34,7 +34,7 @@ public class KakaoLoginController {
 
 
 
-    @GetMapping("/callback")
+    @GetMapping("/kako")
     public ResponseEntity<LoginResponse> callback(
             @RequestParam("code") String code){
 
