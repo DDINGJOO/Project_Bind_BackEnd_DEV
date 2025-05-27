@@ -1,8 +1,6 @@
 package event.producer;
 
-import event.constant.EventType;
-import event.events.Event;
-import event.events.EventPayload;
+import event.domain.BaseEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
@@ -13,13 +11,10 @@ public class EventProducer {
 
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public <T extends EventPayload> void send(EventType type, T payload, String topic) {
-        Event<T> event = Event.<T>builder()
-                .type(type)
-                .payload(payload)
-                .timestamp(System.currentTimeMillis())
-                .build();
-
-        kafkaTemplate.send(topic, event);
+    /**
+     * 토픽을 파라미터로 받아서 이벤트를 발행합니다.
+     */
+    public void publishEvent(String topic, BaseEvent event) {
+        kafkaTemplate.send(topic, event.getEventType().name(), event);
     }
 }

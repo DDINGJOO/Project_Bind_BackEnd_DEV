@@ -164,6 +164,10 @@ public class AuthController {
         }
     }
 
+    /**
+     * 이메일 인증 요청 API
+     * @param token 인증 토큰
+     */
     @PostMapping("/verify-email")
     public ResponseEntity<BaseResponse<Void>> confirmEmail(
             @RequestParam String token

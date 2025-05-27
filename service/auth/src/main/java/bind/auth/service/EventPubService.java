@@ -3,9 +3,7 @@ package bind.auth.service;
 import bind.auth.entity.User;
 
 
-import event.constant.EventType;
-import event.events.Event;
-import event.payload.EmailVerificationEventPayload;
+import event.dto.UserRegisteredEvent;
 import event.producer.EventProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,16 +32,8 @@ public class EventPubService {
         String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
 
 
-        Event<EmailVerificationEventPayload> event = Event.<EmailVerificationEventPayload>builder()
-                .type(EventType.EMAIL_VERIFICATION)
-                .payload(EmailVerificationEventPayload.builder()
-                        .userId(user.getId())
-                        .email(user.getEmail())
-                        .verificationToken(token)
-                        .build())
-                .timestamp(System.currentTimeMillis())
-                .build();
-
-        eventProducer.send(event.getType(), event.getPayload(), "verified-email-topic");
+        eventProducer.publishEvent("user-registered-topic",
+                new UserRegisteredEvent(user.getId(), user.getEmail(),token)
+        );
     }
 }

@@ -3,7 +3,7 @@ package bind.mail.service;
 
 
 
-import event.payload.EmailVerificationEventPayload;
+import event.dto.UserRegisteredEvent;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -18,10 +18,10 @@ public class MailService {
 
     private final JavaMailSender mailSender;
 
-    public void sendVerificationEmail(EmailVerificationEventPayload payload) {
+    public void sendVerificationEmail(UserRegisteredEvent payload) {
 
         //TODO : REMOVE THIS LINE
-        System.out.println("This is MailService.sendVerificationEmail() \n email : " + payload.getEmail() + "\n token :" + payload.getVerificationToken());
+        System.out.println("This is MailService.sendVerificationEmail() \n email : " + payload.getEmail() + "\n token :" + payload.getToken());
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
@@ -30,7 +30,7 @@ public class MailService {
             helper.setSubject("[BANDER] 회원가입 이메일 인증");
             helper.setText("<h1>이메일 인증</h1>" +
                             "<p>아래 링크를 클릭하여 이메일을 인증해주세요:</p>" +
-                            "<a href='http://localhost:9000/api/auth/verify-email?token=" + payload.getVerificationToken() + "'>이메일 인증하기</a>",
+                            "<a href='http://localhost:9000/api/auth/verify-email?token=" + payload.getToken() + "'>이메일 인증하기</a>",
                     true);
 
             mailSender.send(message);

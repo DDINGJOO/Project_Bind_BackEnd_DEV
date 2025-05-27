@@ -1,7 +1,5 @@
-package event.events;
+package event.domain;
 
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import java.io.Serializable;
 

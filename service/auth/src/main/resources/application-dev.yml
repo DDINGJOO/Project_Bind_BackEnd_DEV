@@ -5,17 +5,6 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP} # e.g. localhost:9093
 
-    consumer:
-      group-id: auth-consumer-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "*"  # 또는 event.events, event.payload 등 명확히
-        spring.json.use.type.headers: false  # 명시적으로 꺼둠
-        spring.json.value.default.type: event.events.Event  # 항상 Event<T> 구조로 역직렬화
-
-    listener:
-      ack-mode: manual_immediate
 
   datasource:
     url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${AUTH_MYSQL_DB}
@@ -51,3 +40,8 @@ oauth:
     redirect-uri: http://localhost:8080/code/google
     token-uri: https://oauth2.googleapis.com/token
     user-info-uri: https://www.googleapis.com/oauth2/v3/userinfo
+
+app:
+  kafka:
+    event-topics: user-registered-events,user-login-events
+    consumer-group: auth-service-group

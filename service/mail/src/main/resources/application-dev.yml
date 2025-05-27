@@ -5,19 +5,6 @@ spring:
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP}  # 예: localhost:9093
 
-    consumer:
-      group-id: mail-consumer-group
-      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
-      properties:
-        spring.json.trusted.packages: "event.events,event.payload"
-        spring.json.use.type.headers: false
-        spring.json.value.default.type: event.events.Event
-
-    listener:
-      ack-mode: manual_immediate  # 수동 커밋, 안정적 메시지 처리
-      missing-topics-fatal: false  # topic 없어도 부트 실패 안 하게
-
   mail:
     host: smtp.gmail.com
     port: 587
@@ -32,3 +19,8 @@ logging:
   level:
     org.springframework.kafka: INFO
     bind.mail: DEBUG
+app:
+    kafka:
+      event-topics: user-registered-topic,email-verification-topic,user-login-topic
+      consumer-group: mail-service-group
+
