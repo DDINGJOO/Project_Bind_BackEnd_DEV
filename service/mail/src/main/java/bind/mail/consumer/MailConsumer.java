@@ -22,13 +22,13 @@ public class MailConsumer {
     private final MailService mailService;
 
     @KafkaListener(
-            topics = "mails-topic",
+            topics = "verified-email-topic",
             groupId = "mails-consumer-group",
             containerFactory = "kafkaListenerContainerFactory"
     )
     public void listen(ConsumerRecord<String, Event<EmailVerificationEventPayload>> record, Acknowledgment ack) {
         Event<EmailVerificationEventPayload> event = record.value();
-        log.info("✅ 이메일 이벤트 수신: {}", event.getPayload().getEmail());
+        log.info("이메일 이벤트 수신: {}", event.getPayload().getEmail());
 
         // 메일 발송 처리
         mailService.sendVerificationEmail(event.getPayload());

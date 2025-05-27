@@ -39,5 +39,8 @@ public class User {
     public void setIsActive(boolean b) {
         this.isActive = b;
     }
+    public void setIsEmailVerified(boolean b) {
+        this.isEmailVerified = b;
+    }
 }
 

@@ -196,7 +196,7 @@ public class AuthService {
                 .ipAddress(ip)
                 .userAgent(userAgent)
                 .reason(reason)
-                .deviceId(deviceId) // Assuming deviceId is the userId for simplicity
+                .deviceId(deviceId)
                 .success(success)
                 .loginAt(LocalDateTime.now())
                 .build();
@@ -263,13 +263,14 @@ public class AuthService {
     @Transactional
     public void confirmEmail(String token) {
         String userId = tokenProvider.getUserIdFromToken(token);
+        System.out.println("User ID from token: " + userId);
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 
         if(user.isEmailVerified()) {
             throw new AuthException(AuthErrorCode.ALREADY_VERIFIED.getMessage(), AuthErrorCode.ALREADY_VERIFIED);
         }
-        user.setEmailVerified(true);
+        user.setIsEmailVerified(true);
         userRepository.save(user);
     }
 }

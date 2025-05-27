@@ -44,6 +44,6 @@ public class EventPubService {
                 .timestamp(System.currentTimeMillis())
                 .build();
 
-        eventProducer.send(event.getType(), event.getPayload(), "mails-topic");
+        eventProducer.send(event.getType(), event.getPayload(), "verified-email-topic");
     }
 }
