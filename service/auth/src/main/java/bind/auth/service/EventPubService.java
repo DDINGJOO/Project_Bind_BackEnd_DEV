@@ -4,6 +4,7 @@ import bind.auth.entity.User;
 
 
 import event.dto.UserRegisteredEvent;
+import event.dto.UserWithdrawEvent;
 import event.producer.EventProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,5 +36,11 @@ public class EventPubService {
         eventProducer.publishEvent("user-registered-topic",
                 new UserRegisteredEvent(user.getId(), user.getEmail(),token)
         );
+    }
+
+    public void kafkaUserWithdrawal(User user) {
+        log.info("called kafkaUserWithdrawal");
+        eventProducer.publishEvent("user-withdrawal-topic",
+                new UserWithdrawEvent(user.getEmail()));
     }
 }

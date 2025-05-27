@@ -29,7 +29,7 @@ import util.PkProvider;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -49,56 +49,26 @@ public class AuthService {
     private final RedisService redisService;
     private final PasswordHistoryRepository passwordHistoryRepository;
 
+
+
+
+
     public LoginResponse login(LoginRequest request, String ip, String userAgent) {
         User user = userRepository.findByLoginId(request.loginId())
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
 
-        if(!user.isEmailVerified()){
-            logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.EMAIL_NOT_VERIFIED.getMessage());
-            throw new AuthException(AuthErrorCode.EMAIL_NOT_VERIFIED.getMessage(), AuthErrorCode.EMAIL_NOT_VERIFIED);
+        AuthErrorCode errorCode = vaildateRegister(user,request);
+        if (errorCode != null) {
+            logLoginAttempt(user, ip, userAgent, request.deviceId(), false, errorCode.getMessage());
+            throw new AuthException(errorCode.getMessage(), errorCode);
         }
-
-
-        if (!user.isActive()) {
-            logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.DEACTIVATED_USER.getMessage());
-            throw new AuthException(AuthErrorCode.DEACTIVATED_USER.getMessage(), AuthErrorCode.DEACTIVATED_USER);
-        }
-
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            logLoginAttempt(user, ip, userAgent, request.deviceId(),false, AuthErrorCode.PASSWORD_NOT_MATCHED.getMessage());
-            throw new AuthException(AuthErrorCode.PASSWORD_NOT_MATCHED.getMessage(), AuthErrorCode.PASSWORD_NOT_MATCHED);
-        }
-
-        if (userSuspensionService.isCurrentlySuspended(user.getId())) {
-            logLoginAttempt(user, ip, userAgent, request.deviceId(), false, AuthErrorCode.SUSPENDED_USER.getMessage());
-            throw new AuthException(AuthErrorCode.SUSPENDED_USER.getMessage(), AuthErrorCode.SUSPENDED_USER);
-        }
-
-
-
-        TokenParam param = tokenParams(user.getId());
-        String accessToken = tokenProvider.createAccessToken(param);
-        String refreshToken = tokenProvider.createRefreshToken(param);
-
-        // Redis 저장
-        redisService.saveRefreshToken(user.getId(), request.deviceId(), refreshToken, Duration.ofDays(14));
-
-        // DB 저장
-        RefreshToken entity = RefreshToken.builder()
-                .user(user)
-                .deviceId(request.deviceId())
-                .token(refreshToken)
-                .issuedAt(LocalDateTime.now())
-                .expiry(LocalDateTime.now().plusDays(14))
-                .build();
-        refreshTokenRepository.save(entity);
 
         logLoginAttempt(user, ip, userAgent, request.deviceId(),true, "Login successful");
         user.setLoginFailCount(0);
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
-        return new LoginResponse(accessToken, refreshToken);
+        return generateTokens(user,request);
     }
 
     public void logout(String userId, String deviceId) {
@@ -170,6 +140,8 @@ public class AuthService {
 
 
 
+
+    @Transactional
     public LoginResponse refresh(String userId, String deviceId, String refreshToken) {
         if (!redisService.validateRefreshToken(userId, deviceId, refreshToken)) {
             throw new AuthException(AuthErrorCode.INVALID_REFRESH_TOKEN.getMessage(), AuthErrorCode.INVALID_REFRESH_TOKEN);
@@ -190,6 +162,8 @@ public class AuthService {
         return new LoginResponse(newAccessToken, newRefreshToken);
     }
 
+
+
     private void logLoginAttempt(User user, String ip, String userAgent,String deviceId, boolean success, String reason) {
         UserLoginLog log = UserLoginLog.builder()
                 .user(user)
@@ -205,37 +179,31 @@ public class AuthService {
 
 
 
-    @Transactional
-    public void updateRefreshToken(String userId, String deviceId, String ip, String userAgent) {
-
-        String newRefreshToken = tokenProvider.createRefreshToken(tokenParams(userId));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
-
-
-        // DB 갱신
-        Optional<RefreshToken> existing = refreshTokenRepository.findByUserIdAndDeviceId(userId, deviceId);
-        if (existing.isPresent()) {
-            existing.get().update(newRefreshToken, LocalDateTime.now(), LocalDateTime.now().plusDays(14));
-            refreshTokenRepository.save(existing.get());
-        } else {
-            RefreshToken tokenEntity = RefreshToken.builder()
-                    .user(user)
-                    .deviceId(deviceId)
-                    .clientIp(ip)
-                    .userAgent(userAgent)
-                    .token(newRefreshToken)
-                    .issuedAt(LocalDateTime.now())
-                    .expiry(LocalDateTime.now().plusDays(14))
-                    .build();
-            refreshTokenRepository.save(tokenEntity);
+    private AuthErrorCode vaildateRegister(User user,LoginRequest request)
+    {
+        if(!user.isEmailVerified()){
+            return  AuthErrorCode.EMAIL_NOT_VERIFIED;
         }
 
-        // Redis 저장
-        redisService.saveRefreshToken(userId, deviceId,newRefreshToken, Duration.ofDays(14));
+
+        if (!user.isActive()) {
+            return AuthErrorCode.DEACTIVATED_USER;
+        }
+
+        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+            return AuthErrorCode.PASSWORD_NOT_MATCHED;
+        }
+
+        if (userSuspensionService.isCurrentlySuspended(user.getId())) {
+            return AuthErrorCode.SUSPENDED_USER;
+        }
+
+        return null;
+
     }
 
-    public void withdraw(String userId, WithdrawRequest request) {
+
+    public User withdraw(String userId, WithdrawRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException(AuthErrorCode.USER_NOT_FOUND.getMessage(), AuthErrorCode.USER_NOT_FOUND));
         user.setIsActive(false);
@@ -246,6 +214,7 @@ public class AuthService {
                 .reason(request.reason())
                 .withdrawAt(LocalDateTime.now())
                 .build());
+        return user;
     }
 
     public TokenParam tokenParams(String userId) {
@@ -258,6 +227,26 @@ public class AuthService {
         return userLoginLogRepository.findAll(pageable);
     }
 
+    private LoginResponse generateTokens(User user, LoginRequest request) {
+        TokenParam param = tokenParams(user.getId());
+        String accessToken = tokenProvider.createAccessToken(param);
+        String refreshToken = tokenProvider.createRefreshToken(param);
+
+        // Redis 저장
+        redisService.saveRefreshToken(user.getId(), request.deviceId(), refreshToken, Duration.ofDays(14));
+
+        // DB 저장
+        RefreshToken entity = RefreshToken.builder()
+                .user(user)
+                .deviceId(request.deviceId())
+                .token(refreshToken)
+                .issuedAt(LocalDateTime.now())
+                .expiry(LocalDateTime.now().plusDays(14))
+                .build();
+        refreshTokenRepository.save(entity);
+
+        return new LoginResponse(accessToken, refreshToken);
+    }
 
 
     @Transactional

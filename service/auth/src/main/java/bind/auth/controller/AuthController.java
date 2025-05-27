@@ -140,12 +140,6 @@ public class AuthController {
         }
     }
 
-
-    @GetMapping("/health")
-    public ResponseEntity<BaseResponse<String>> healthCheck() {
-        return ResponseEntity.ok(BaseResponse.success("Auth service is running"));
-    }
-
     /**
      * 마이 페이지 API
      * @return 마이 페이지 정보

@@ -2,8 +2,11 @@ package bind.auth.controller;
 
 
 import bind.auth.dto.request.WithdrawRequest;
+import bind.auth.entity.User;
+import bind.auth.exception.AuthErrorCode;
 import bind.auth.exception.AuthException;
 import bind.auth.service.AuthService;
+import bind.auth.service.EventPubService;
 import data.BaseResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -15,6 +18,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import security.jwt.JwtProvider;
 
 @Tag(name = "Auth - Withdraw", description = "회원 탈퇴 관련 API")
 @RestController
@@ -23,7 +27,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthWithdrawController {
 
     private final AuthService authService;
-
+    private final JwtProvider jwtProvider;
+    private final EventPubService eventPubService;
 
     /**
      * 회원 탈퇴 API
@@ -41,16 +46,32 @@ public class AuthWithdrawController {
     )
     @PostMapping("/withdraw")
     public ResponseEntity<BaseResponse<Void>> withdraw(
+            @RequestHeader("Authorization") String bearerToken,
             @Parameter(description = "탈퇴할 사용자 ID", required = true) @RequestParam String userId,
             @Valid @RequestBody WithdrawRequest request
     ) {
+
+        // 토큰 검증 및 사용자 ID 추출
+        if (bearerToken == null || !bearerToken.startsWith("Bearer ")) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(AuthErrorCode.TOKEN_INVALID));
+        }
+        String token = bearerToken.substring(7);
+        String tokenUserId = jwtProvider.getUserIdFromToken(token);
+        if (!tokenUserId.equals(userId)) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(AuthErrorCode.TOKEN_INVALID));
+        }
+
+
         try {
-            authService.withdraw(userId, request);
+            User user =authService.withdraw(userId, request);
+            eventPubService.kafkaUserWithdrawal(user);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(BaseResponse.error("알 수 없는 오류가 발생했습니다."));
         }
+
+
     }
 }
