@@ -45,3 +45,6 @@ app:
   kafka:
     event-topics: user-registered-events,user-login-events
     consumer-group: auth-service-group
+kakao:
+  client_id: ${KAKAO_REST_API_KEY}
+  redirect_uri: ${KAKAO_REDIRECT_URI}
