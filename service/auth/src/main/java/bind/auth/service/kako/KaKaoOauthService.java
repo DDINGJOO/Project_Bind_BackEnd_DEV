@@ -1,12 +1,9 @@
 package bind.auth.service.kako;
 
 
-import bind.auth.dto.OauthUserInfo;
-import bind.auth.dto.kakao.KakaoTokenResponseDto;
-import bind.auth.dto.kakao.KakaoUserInfoResponseDto;
-import bind.auth.entity.OAuthAccount;
-import bind.auth.repository.OAuthAccountRepository;
-import bind.auth.service.AuthService;
+import bind.auth.dto.Oauth.OauthUserInfo;
+import bind.auth.dto.Oauth.kakao.KakaoTokenResponseDto;
+import bind.auth.dto.Oauth.kakao.KakaoUserInfoResponseDto;
 import io.netty.handler.codec.http.HttpHeaderValues;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -14,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 

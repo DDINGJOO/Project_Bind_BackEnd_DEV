@@ -1,24 +1,20 @@
 package bind.auth.service;
 
 
-import bind.auth.dto.OauthUserInfo;
+import bind.auth.dto.Oauth.OauthUserInfo;
 import bind.auth.entity.OAuthAccount;
 import bind.auth.entity.User;
 import bind.auth.entity.UserRole;
 import bind.auth.exception.AuthErrorCode;
 import bind.auth.exception.AuthException;
 import bind.auth.repository.OAuthAccountRepository;
-import bind.auth.repository.UserReportRepository;
 import bind.auth.repository.UserRepository;
 import bind.auth.repository.UserRoleRepository;
-import data.enums.auth.ProviderType;
 import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import security.jwt.TokenParam;
 import util.PkProvider;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Service

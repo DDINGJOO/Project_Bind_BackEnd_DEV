@@ -1,4 +1,4 @@
-package bind.auth.dto;
+package bind.auth.dto.Oauth;
 
 
 import data.enums.auth.ProviderType;

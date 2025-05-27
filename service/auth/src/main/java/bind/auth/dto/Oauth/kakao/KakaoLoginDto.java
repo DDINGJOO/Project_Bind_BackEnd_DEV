@@ -1,4 +1,4 @@
-package bind.auth.dto.kakao;
+package bind.auth.dto.Oauth.kakao;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

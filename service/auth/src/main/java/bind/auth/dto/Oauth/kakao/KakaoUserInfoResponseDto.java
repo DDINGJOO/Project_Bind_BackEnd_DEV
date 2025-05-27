@@ -1,7 +1,7 @@
-package bind.auth.dto.kakao;
+package bind.auth.dto.Oauth.kakao;
 
 
-import bind.auth.dto.OauthUserInfo;
+import bind.auth.dto.Oauth.OauthUserInfo;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import data.enums.auth.ProviderType;

@@ -12,7 +12,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController("/api/test")
+
+@RestController()
 @Slf4j
 @RequiredArgsConstructor
 public class HealthController {
