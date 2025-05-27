@@ -1,5 +1,5 @@
 server:
-  port: ${IMAGE_SEVER_PORT}
+  port: ${IMAGE_SERVER_PORT}
 
 spring:
   kafka:

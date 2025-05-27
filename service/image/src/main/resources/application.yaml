@@ -1,6 +1,6 @@
 spring:
     application:
-        name: bind.mail
+        name: bind.image
 
 
     profiles:

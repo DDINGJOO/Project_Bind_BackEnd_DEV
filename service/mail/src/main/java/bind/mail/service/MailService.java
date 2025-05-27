@@ -21,7 +21,7 @@ public class MailService {
 
     public void sendVerificationEmail(UserRegisteredEvent payload) {
 
-        //TODO : REMOVE THIS LINE
+        //TODO : MAIL PATH  CHECK
         System.out.println("This is MailService.sendVerificationEmail() \n email : " + payload.getEmail() + "\n token :" + payload.getToken());
         try {
             MimeMessage message = mailSender.createMimeMessage();

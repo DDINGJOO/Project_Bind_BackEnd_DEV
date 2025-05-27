@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 @Table(name = "image_files")
 @Getter
 @Builder
-@RequiredArgsConstructor
 @AllArgsConstructor
 @NoArgsConstructor
 public class ImageFile {
