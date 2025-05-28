@@ -14,7 +14,8 @@ import org.springframework.kafka.annotation.EnableKafka;
 @ComponentScan(basePackages = {
         "bind.mail",              // 기본 패키지
         "security",          // 공통 security 모듈
-        "event"                 // 공통 event 모듈
+        "event",                 // 공통 event 모듈
+        "logging",              // 공통 logging 모듈
 })
 @EnableKafka
 public class MailApplication {

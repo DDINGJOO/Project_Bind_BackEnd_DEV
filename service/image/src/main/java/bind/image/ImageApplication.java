@@ -11,6 +11,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import security.jwt.JwtProperties;
 
 @EnableScheduling
+
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @EnableConfigurationProperties(JwtProperties.class)
 @ComponentScan(basePackages = {
@@ -32,7 +33,7 @@ public class ImageApplication {
         );
 
 
-        
+
         SpringApplication.run(ImageApplication.class, args);
     }
 }

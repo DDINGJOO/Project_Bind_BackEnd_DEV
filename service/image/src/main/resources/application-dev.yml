@@ -6,7 +6,7 @@ spring:
     bootstrap-servers: ${KAFKA_BOOTSTRAP}  # 예: localhost:9093
 
   datasource:
-    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${AUTH_MYSQL_DB}
+    url: jdbc:mysql://${MYSQL_HOST}:${MYSQL_PORT}/${IMAGE_MYSQL_DB}
     username: ${MYSQL_USER}
     password: ${MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -26,6 +26,9 @@ logging:
     bind.mail: DEBUG
 app:
     kafka:
-      event-topics: user-registered-topic,email-verification-topic,user-login-topic,user-withdrawal-topic
+      event-topics: profile-updated-topic, profile-deleted-topic, article-created-topic, article-deleted-topic, article-updated-topic
       consumer-group: image-service-group
 
+image:
+  upload:
+    dir: ${IMAGE_UPLOAD_DIR} # 이미지 업로드 디렉토리
