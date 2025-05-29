@@ -10,6 +10,7 @@ import data.BaseResponse;
 import data.enums.image.ImageCategory;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
+@Slf4j
 @RequestMapping("/api/images")
 public class ImageController {
 
@@ -32,6 +34,8 @@ public class ImageController {
                                                       @RequestParam(defaultValue = "PUBLIC") ImageVisibility visibility) {
 
 
+        log.info("Image upload request: category={}, referenceId={}, uploaderId={}, visibility={}",
+                category, referenceId, uploaderId, visibility);
         try {
             var result = imageFileService.upload(file, category, referenceId, uploaderId, visibility);
             return ResponseEntity.ok(BaseResponse.success(result));
@@ -45,6 +49,7 @@ public class ImageController {
     @GetMapping
     public ResponseEntity<BaseResponse<List<ImageResponse>>> getUrls(@RequestParam ImageCategory category,
                                                                      @RequestParam String referenceId) {
+        log.info("Get image URLs request: category={}, referenceId={}", category, referenceId);
         try {
             List<ImageResponse> imageUrls = imageFileService.getImageUrls(category, referenceId);
             return ResponseEntity.ok(BaseResponse.success(imageUrls));
@@ -55,6 +60,7 @@ public class ImageController {
 
     @PatchMapping("/confirm")
     public ResponseEntity<BaseResponse<Long>> confirm(@RequestParam Long imageId) {
+        log.info("Confirm image request: imageId={}", imageId);
         try {
             imageFileService.confirmImage(imageId);
             return ResponseEntity.ok(BaseResponse.success(imageId));
@@ -63,16 +69,38 @@ public class ImageController {
         }
     }
 
+    @PatchMapping("/confirms")
+    public ResponseEntity<BaseResponse<Long>> confirms(@RequestParam List<Long> imageId) {
+        log.info("Confirm multiple images request: imageIds={}", imageId);
+        try {
+            imageFileService.markAsConfirmed(imageId);
+            return ResponseEntity.ok(BaseResponse.success());
+        } catch (ImageException e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
+        }
+    }
+
 
     @DeleteMapping
     public ResponseEntity<BaseResponse<Long>> delete(@RequestParam Long imageId) {
+        log.info("Delete image request: imageId={}", imageId);
         try {
             imageFileService.deleteImage(imageId);
             return ResponseEntity.ok(BaseResponse.success(imageId));
         } catch (ImageException e) {
             return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
         }
+    }
 
+    @DeleteMapping
+    public ResponseEntity<BaseResponse<Long>> delete(@RequestParam List<Long> imageIds) {
+        log.info("Delete multiple images request: imageIds={}", imageIds);
+        try {
+            imageFileService.markAsPendingDelete(imageIds);
+            return ResponseEntity.ok(BaseResponse.success());
+        } catch (ImageException e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
+        }
     }
 
 
@@ -80,6 +108,7 @@ public class ImageController {
     //TODO : 실제 NSFW 감지 로직 구현 후 제거
     @PostMapping("/detect")
     public ResponseEntity<NsfwDetectionResult> detectNsfw(@RequestParam MultipartFile file) {
+        log.info("NSFW detection request for file: {}", file.getOriginalFilename());
 
         return ResponseEntity.ok(
                 NsfwDetectionResult.builder()

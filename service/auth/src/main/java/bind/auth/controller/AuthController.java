@@ -70,6 +70,8 @@ public class AuthController {
             @RequestBody @Valid LoginRequest request,
             @RequestHeader("User-Agent") String userAgent,
             @RequestHeader(value = "X-Forwarded-For", required = false) String clientIp) {
+
+        log.info("Call Login");
         try {
             String ip = (clientIp != null) ? clientIp : "127.0.0.1";
             LoginResponse response = authService.login(request, ip, userAgent);
@@ -92,6 +94,7 @@ public class AuthController {
             @RequestParam String userId,
             @RequestParam String deviceId,
             @RequestParam String refreshToken) {
+        log.info("Call Refresh Token");
         try {
             LoginResponse tokens = authService.refresh(userId, deviceId, refreshToken);
             return ResponseEntity.ok(BaseResponse.success(tokens));
@@ -113,6 +116,7 @@ public class AuthController {
             @RequestParam String logindId,
             @RequestBody @Valid PasswordChangeRequest request
     ) {
+        log.info("Call Change Password");
         try {
             authService.changePassword(logindId, request);
             return ResponseEntity.ok(BaseResponse.success());
@@ -133,6 +137,7 @@ public class AuthController {
             @RequestParam String userId,
             @RequestParam String deviceId) {
         try {
+            log.info("Call Logout for userId: {}, deviceId: {}", userId, deviceId);
             authService.logout(userId, deviceId);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (Exception e) {
@@ -148,7 +153,9 @@ public class AuthController {
     public ResponseEntity<BaseResponse<String>> getMyId(
             @RequestHeader("Authorization") String bearerToken
     ) {
+        log.info("Call Get My ID");
         try {
+
             String userId = jwtProvider.getUserIdFromToken(bearerToken);
             return ResponseEntity.ok(BaseResponse.success(userId));
         } catch (AuthException e) {
@@ -166,6 +173,7 @@ public class AuthController {
     public ResponseEntity<BaseResponse<Void>> confirmEmail(
             @RequestParam String token
     ) {
+        log.info("Call Confirm Email with token: {}", token);
         try {
             authService.confirmEmail(token);
             return ResponseEntity.ok(BaseResponse.success());
