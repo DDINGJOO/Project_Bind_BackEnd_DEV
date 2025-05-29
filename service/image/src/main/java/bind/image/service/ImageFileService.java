@@ -113,14 +113,17 @@ public class ImageFileService {
     }
 
 
-    public void markAsConfirmed(List<Long> imageIds) {
-        List<ImageFile> images = imageFileRepository.findAllById(imageIds);
+    public void markAsConfirmed(ImageCategory category , String referenceId) {
+        List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category,referenceId);
 
         images.forEach(ImageFile::confirm);
     }
 
-    public void markAsPendingDelete(List<Long> imageIds) {
-        List<ImageFile> images = imageFileRepository.findAllById(imageIds);
+    public void markAsPendingDelete(ImageCategory category , String referenceId) {
+        List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category, referenceId);
+        if (images.isEmpty()) {
+            throw new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
+        }
         images.forEach(ImageFile::markPendingDelete);
     }
 

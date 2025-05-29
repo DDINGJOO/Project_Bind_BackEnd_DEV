@@ -70,10 +70,11 @@ public class ImageController {
     }
 
     @PatchMapping("/confirms")
-    public ResponseEntity<BaseResponse<Long>> confirms(@RequestParam List<Long> imageId) {
-        log.info("Confirm multiple images request: imageIds={}", imageId);
+    public ResponseEntity<BaseResponse<Long>> confirms(@RequestParam ImageCategory category,
+                                                       @RequestParam String referenceId) {
+        log.info(" Confirm images request: category={}, referenceId={}", category, referenceId);
         try {
-            imageFileService.markAsConfirmed(imageId);
+            imageFileService.markAsConfirmed(category, referenceId);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (ImageException e) {
             return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
@@ -92,11 +93,12 @@ public class ImageController {
         }
     }
 
-    @DeleteMapping
-    public ResponseEntity<BaseResponse<Long>> delete(@RequestParam List<Long> imageIds) {
-        log.info("Delete multiple images request: imageIds={}", imageIds);
+    @DeleteMapping("/deleteAll")
+    public ResponseEntity<BaseResponse<Long>> deletes(@RequestParam ImageCategory category,
+                                                      @RequestParam String referenceId) {
+        log.info("Delete images request: category={}, referenceId={}", category, referenceId);
         try {
-            imageFileService.markAsPendingDelete(imageIds);
+            imageFileService.markAsPendingDelete(category, referenceId);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (ImageException e) {
             return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
