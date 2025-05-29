@@ -32,3 +32,5 @@ app:
 image:
   upload:
     dir: ${IMAGE_UPLOAD_DIR} # 이미지 업로드 디렉토리
+    max-size: ${IMAGE_MAX_SIZE} # 이미지 최대 크기 (바이트 단위)R
+    NsfwUrl: ${IMAGE_NSFW_URL} # NSFW 이미지 검출 API URL

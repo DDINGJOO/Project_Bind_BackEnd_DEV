@@ -1,5 +1,7 @@
 package bind.image.service;
 
+import bind.image.exception.ImageErrorCode;
+import bind.image.exception.ImageException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -9,7 +11,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 
 
-@Service("localImageStorage")
+@Service
 public class LocalImageStorage implements ImageStorage {
 
     @Value("${image.upload.dir}")
@@ -23,10 +25,11 @@ public class LocalImageStorage implements ImageStorage {
             try (FileOutputStream fos = new FileOutputStream(target)) {
                 fos.write(file.getBytes());
             }
-            return relativePath;
+
         } catch (IOException e) {
-            throw new RuntimeException("파일 저장 실패", e);
+                throw  new ImageException(ImageErrorCode.IMAGE_DOWNLOAD_FAILED);
         }
+        return relativePath;
     }
 
     @Override

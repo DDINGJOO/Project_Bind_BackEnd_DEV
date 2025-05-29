@@ -2,6 +2,8 @@ package bind.image.service;
 
 import bind.image.dto.response.ImageUploadResponse;
 import bind.image.entity.ImageFile;
+import bind.image.exception.ImageErrorCode;
+import bind.image.exception.ImageException;
 import bind.image.repository.ImageFileRepository;
 import data.enums.image.ImageCategory;
 import data.enums.image.ImageStatus;
@@ -20,8 +22,12 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ImageFileService {
     private final ImageFileRepository imageFileRepository;
-    @Qualifier("localImageStorage")
-    private final ImageStorage imageStorage;
+
+    private final LocalImageStorage imageStorage;
+
+    private final NsfwDetectionService nsfwDetectionService;
+
+
     public ImageUploadResponse upload(MultipartFile file, ImageCategory category, String referenceId, String uploaderId, ImageVisibility visibility) {
         String uuid = UUID.randomUUID().toString();
         String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
@@ -30,6 +36,15 @@ public class ImageFileService {
         String storedPath = "/upload/images/" + category.name() + "/" + datePath + "/" + fileName;
 
         imageStorage.store(file, storedPath);
+
+
+
+        //TODO : 실제 NSFW 감지 로직 구현 후 제거
+        boolean isSafe = true;
+
+
+        ImageStatus status = isSafe ? ImageStatus.TEMP  : ImageStatus.REJECTED;
+
 
         ImageFile imageFile = ImageFile.builder()
                 .uuidName(fileName)
@@ -41,7 +56,7 @@ public class ImageFileService {
                 .category(category)
                 .referenceId(referenceId)
                 .uploaderId(uploaderId)
-                .status(ImageStatus.TEMP)
+                .status(status)
                 .visibility(visibility)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -62,16 +77,32 @@ public class ImageFileService {
 
     public void confirmImage(Long imageId) {
         ImageFile image = imageFileRepository.findById(imageId)
-                .orElseThrow(() -> new IllegalArgumentException("이미지 없음"));
+                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND));
 
         if (image.getStatus() != ImageStatus.TEMP) {
-            throw new IllegalStateException("이미지 변화 없음");
+            throw new ImageException(ImageErrorCode.IMAGE_NOT_TEMP);
         }
         image.confirm();
+        imageFileRepository.save(image);
     }
+
+
+
+    public void deleteImage(Long imageId) {
+        ImageFile image = imageFileRepository.findById(imageId)
+                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND));
+
+        if (image.getStatus() == ImageStatus.PENDING_DELETE) {
+            throw new ImageException(ImageErrorCode.IMAGE_ALREADY_PENDING_DELETE);
+        }
+        image.markPendingDelete();
+        imageFileRepository.save(image);
+    }
+
 
     public void markAsConfirmed(List<Long> imageIds) {
         List<ImageFile> images = imageFileRepository.findAllById(imageIds);
+
         images.forEach(ImageFile::confirm);
     }
 
@@ -86,6 +117,7 @@ public class ImageFileService {
         LocalDateTime cutoff = LocalDateTime.now().minusHours(1);
         List<ImageFile> expired = imageFileRepository.findByStatusAndCreatedAtBefore(ImageStatus.TEMP, cutoff);
         expired.addAll(imageFileRepository.findByStatusAndPendingDeleteAtBefore(ImageStatus.PENDING_DELETE, cutoff));
+        expired.add(imageFileRepository.findByStatus(ImageStatus.REJECTED));
         for (ImageFile image : expired) {
 
             imageStorage.delete(image.getStoredPath());

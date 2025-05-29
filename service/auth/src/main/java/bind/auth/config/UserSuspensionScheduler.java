@@ -14,7 +14,7 @@ public class UserSuspensionScheduler {
     private final UserSuspensionService userSuspensionService;
 
     /**
-     * 매 1시간마다 만료된 정지 자동 해제
+     * 매일 마다 만료된 정지 자동 해제
      */
     @Scheduled(cron = "0 0 0 * * *") //  매일 자정에 실행
     public void releaseExpiredSuspensions() {

@@ -11,4 +11,8 @@ public interface ImageFileRepository extends JpaRepository<ImageFile, Long> {
     List<ImageFile> findByCategoryAndReferenceId(ImageCategory category, String referenceId);
     List<ImageFile> findByStatusAndCreatedAtBefore(ImageStatus status, LocalDateTime cutoff);
     List<ImageFile> findByStatusAndPendingDeleteAtBefore(ImageStatus status, LocalDateTime cutoff);
+
+    ImageFile findByStatus(ImageStatus imageStatus);
+
+
 }

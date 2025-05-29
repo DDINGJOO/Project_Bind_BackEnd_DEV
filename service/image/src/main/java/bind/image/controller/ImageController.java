@@ -1,7 +1,11 @@
 package bind.image.controller;
 
 import bind.image.dto.response.ImageUploadResponse;
+import bind.image.dto.response.NsfwDetectionResult;
+import bind.image.exception.ImageException;
 import bind.image.service.ImageFileService;
+import bind.image.service.NsfwDetectionService;
+import data.BaseResponse;
 import data.enums.image.ImageCategory;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
@@ -17,25 +21,69 @@ import java.util.List;
 public class ImageController {
 
     private final ImageFileService imageFileService;
+    private final NsfwDetectionService nsfwDetectionService;
 
     @PostMapping
-    public ResponseEntity<ImageUploadResponse> upload(@RequestParam MultipartFile file,
+    public ResponseEntity<BaseResponse<ImageUploadResponse>> upload(@RequestParam MultipartFile file,
                                                       @RequestParam ImageCategory category,
                                                       @RequestParam String referenceId,
                                                       @RequestParam String uploaderId,
                                                       @RequestParam(defaultValue = "PUBLIC") ImageVisibility visibility) {
-        return ResponseEntity.ok(imageFileService.upload(file, category, referenceId, uploaderId, visibility));
+
+
+        try {
+            var result = imageFileService.upload(file, category, referenceId, uploaderId, visibility);
+            return ResponseEntity.ok(BaseResponse.success(result));
+        } catch (ImageException e) {
+           return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
+        }
     }
+
+
 
     @GetMapping
-    public ResponseEntity<List<String>> getUrls(@RequestParam ImageCategory category,
-                                                @RequestParam String referenceId) {
-        return ResponseEntity.ok(imageFileService.getImageUrls(category, referenceId));
+    public ResponseEntity<BaseResponse<List<String>>> getUrls(@RequestParam ImageCategory category,
+                                                                   @RequestParam String referenceId) {
+        try {
+            List<String> urls = imageFileService.getImageUrls(category, referenceId);
+            return ResponseEntity.ok(BaseResponse.success(urls));
+        } catch (ImageException e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
+        }
     }
 
-    @PatchMapping("/{id}/confirm")
-    public ResponseEntity<Void> confirm(@PathVariable Long id) {
-        imageFileService.confirmImage(id);
-        return ResponseEntity.ok().build();
+    @PatchMapping("/confirm")
+    public ResponseEntity<BaseResponse<Long>> confirm(@RequestParam Long imageId) {
+        try {
+            imageFileService.confirmImage(imageId);
+            return ResponseEntity.ok(BaseResponse.success(imageId));
+        } catch (ImageException e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
+        }
+    }
+
+
+    @DeleteMapping
+    public ResponseEntity<BaseResponse<Long>> delete(@RequestParam Long imageId) {
+        try {
+            imageFileService.deleteImage(imageId);
+            return ResponseEntity.ok(BaseResponse.success(imageId));
+        } catch (ImageException e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
+        }
+
+    }
+
+
+
+    //TODO : 실제 NSFW 감지 로직 구현 후 제거
+    @PostMapping("/detect")
+    public ResponseEntity<NsfwDetectionResult> detectNsfw(@RequestParam MultipartFile file) {
+
+        return ResponseEntity.ok(
+                NsfwDetectionResult.builder()
+                        .safe(true)
+                        .build()
+        );
     }
 }
