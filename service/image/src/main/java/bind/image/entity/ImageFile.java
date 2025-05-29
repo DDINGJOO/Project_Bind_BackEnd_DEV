@@ -1,6 +1,6 @@
 package bind.image.entity;
 
-import data.enums.image.ImageCategory;
+import data.enums.ResourceCategory;
 import data.enums.image.ImageStatus;
 import data.enums.image.ImageVisibility;
 import jakarta.persistence.*;
@@ -39,9 +39,9 @@ public class ImageFile {
     // 파일 크기 (바이트 단위)
     private Long fileSize;
 
-    // 이미지 카테고리 (PROFILE, POST, BAND_ROOM, BUSINESS_DOC 등)
+    // 카테고리 (PROFILE, POST, BAND_ROOM, BUSINESS_DOC 등)
     @Enumerated(EnumType.STRING)
-    private ImageCategory category;
+    private ResourceCategory category;
 
     // 참조 ID (ex. 게시글 ID, 유저 ID 등)
     private String referenceId;

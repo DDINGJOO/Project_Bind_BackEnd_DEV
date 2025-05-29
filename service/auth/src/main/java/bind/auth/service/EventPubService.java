@@ -44,7 +44,7 @@ public class EventPubService {
     public void kafkaUserWithdrawal(User user) {
         log.info("called kafkaUserWithdrawal");
         eventProducer.publishEvent("user-withdrawal-topic",
-                new UserWithdrawEvent(user.getEmail()));
+                new UserWithdrawEvent(user.getId(),user.getEmail()));
     }
 
 

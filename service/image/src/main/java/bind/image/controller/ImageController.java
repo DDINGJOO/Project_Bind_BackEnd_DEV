@@ -5,9 +5,8 @@ import bind.image.dto.response.ImageUploadResponse;
 import bind.image.dto.response.NsfwDetectionResult;
 import bind.image.exception.ImageException;
 import bind.image.service.ImageFileService;
-import bind.image.service.NsfwDetectionService;
 import data.BaseResponse;
-import data.enums.image.ImageCategory;
+import data.enums.ResourceCategory;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,7 +26,7 @@ public class ImageController {
 
     @PostMapping
     public ResponseEntity<BaseResponse<ImageUploadResponse>> upload(@RequestParam MultipartFile file,
-                                                      @RequestParam ImageCategory category,
+                                                      @RequestParam ResourceCategory category,
                                                       @RequestParam String referenceId,
                                                       @RequestParam String uploaderId,
                                                       @RequestParam(defaultValue = "PUBLIC") ImageVisibility visibility) {
@@ -46,7 +45,7 @@ public class ImageController {
 
 
     @GetMapping
-    public ResponseEntity<BaseResponse<List<ImageResponse>>> getUrls(@RequestParam ImageCategory category,
+    public ResponseEntity<BaseResponse<List<ImageResponse>>> getUrls(@RequestParam ResourceCategory category,
                                                                      @RequestParam String referenceId) {
         log.info("Get image URLs request: category={}, referenceId={}", category, referenceId);
         try {
@@ -69,7 +68,7 @@ public class ImageController {
     }
 
     @PatchMapping("/confirms")
-    public ResponseEntity<BaseResponse<Long>> confirms(@RequestParam ImageCategory category,
+    public ResponseEntity<BaseResponse<Long>> confirms(@RequestParam ResourceCategory category,
                                                        @RequestParam String referenceId) {
         log.info(" Confirm images request: category={}, referenceId={}", category, referenceId);
         try {
@@ -93,7 +92,7 @@ public class ImageController {
     }
 
     @DeleteMapping("/deleteAll")
-    public ResponseEntity<BaseResponse<Long>> deletes(@RequestParam ImageCategory category,
+    public ResponseEntity<BaseResponse<Long>> deletes(@RequestParam ResourceCategory category,
                                                       @RequestParam String referenceId) {
         log.info("Delete images request: category={}, referenceId={}", category, referenceId);
         try {

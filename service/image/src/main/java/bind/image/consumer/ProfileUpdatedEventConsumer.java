@@ -25,6 +25,9 @@ public class ProfileUpdatedEventConsumer implements EventHandler<ProfileUpdatedE
 
     @Override
     public void handle(ProfileUpdatedEvent event) {
+        if(event == null || event.getImageId() == null) {
+            return; // 이벤트가 없거나 이미지 ID가 없는 경우 처리하지 않음
+        }
 
         imageFileService.confirmImage(
                 event.getImageId()

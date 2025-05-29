@@ -6,7 +6,7 @@ import bind.image.entity.ImageFile;
 import bind.image.exception.ImageErrorCode;
 import bind.image.exception.ImageException;
 import bind.image.repository.ImageFileRepository;
-import data.enums.image.ImageCategory;
+import data.enums.ResourceCategory;
 import data.enums.image.ImageStatus;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +30,7 @@ public class ImageFileService {
 
 
 
-    public ImageUploadResponse upload(MultipartFile file, ImageCategory category, String referenceId, String uploaderId, ImageVisibility visibility) {
+    public ImageUploadResponse upload(MultipartFile file, ResourceCategory category, String referenceId, String uploaderId, ImageVisibility visibility) {
         String uuid = UUID.randomUUID().toString();
         String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
@@ -72,7 +72,7 @@ public class ImageFileService {
                 .build();
     }
 
-    public List<ImageResponse> getImageUrls(ImageCategory category, String referenceId) {
+    public List<ImageResponse> getImageUrls(ResourceCategory category, String referenceId) {
         List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(
                 category, referenceId);
 
@@ -113,13 +113,13 @@ public class ImageFileService {
     }
 
 
-    public void markAsConfirmed(ImageCategory category , String referenceId) {
+    public void markAsConfirmed(ResourceCategory category , String referenceId) {
         List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category,referenceId);
 
         images.forEach(ImageFile::confirm);
     }
 
-    public void markAsPendingDelete(ImageCategory category , String referenceId) {
+    public void markAsPendingDelete(ResourceCategory category , String referenceId) {
         List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category, referenceId);
         if (images.isEmpty()) {
             throw new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
