@@ -10,7 +10,7 @@ import data.enums.image.ImageCategory;
 import data.enums.image.ImageStatus;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,12 +28,12 @@ public class ImageFileService {
 
     private final LocalImageStorage imageStorage;
 
-    private final NsfwDetectionService nsfwDetectionService;
 
 
     public ImageUploadResponse upload(MultipartFile file, ImageCategory category, String referenceId, String uploaderId, ImageVisibility visibility) {
         String uuid = UUID.randomUUID().toString();
         String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
+
         String fileName = uuid + extension;
         String datePath = LocalDateTime.now().toLocalDate().toString().replace("-", "/");
         String storedPath = "/upload/images/" + category.name() + "/" + datePath + "/" + fileName;

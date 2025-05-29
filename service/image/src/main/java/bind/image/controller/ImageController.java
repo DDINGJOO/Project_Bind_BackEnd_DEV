@@ -24,7 +24,6 @@ import java.util.List;
 public class ImageController {
 
     private final ImageFileService imageFileService;
-    private final NsfwDetectionService nsfwDetectionService;
 
     @PostMapping
     public ResponseEntity<BaseResponse<ImageUploadResponse>> upload(@RequestParam MultipartFile file,
