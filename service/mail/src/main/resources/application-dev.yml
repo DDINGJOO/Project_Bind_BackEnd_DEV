@@ -21,6 +21,6 @@ logging:
     bind.mail: DEBUG
 app:
     kafka:
-      event-topics: user-registered-topic,email-verification-topic,user-login-topic,user-withdrawal-topic
+      event-topics: user-email-verification-topic,email-verification-topic,user-login-topic,user-withdrawal-topic
       consumer-group: mail-service-group
 

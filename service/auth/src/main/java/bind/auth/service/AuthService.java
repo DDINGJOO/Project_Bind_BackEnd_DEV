@@ -250,7 +250,7 @@ public class AuthService {
 
 
     @Transactional
-    public void confirmEmail(String token) {
+    public User confirmEmail(String token) {
         String userId = tokenProvider.getUserIdFromToken(token);
         System.out.println("User ID from token: " + userId);
         User user = userRepository.findById(userId)
@@ -261,5 +261,7 @@ public class AuthService {
         }
         user.setIsEmailVerified(true);
         userRepository.save(user);
+
+        return user;
     }
 }

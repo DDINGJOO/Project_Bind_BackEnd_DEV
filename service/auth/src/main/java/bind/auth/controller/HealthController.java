@@ -29,11 +29,4 @@ public class HealthController {
     }
 
 
-    @PostMapping("/event")
-    public String publishTestEvent() {
-        System.out.println("테스트 이벤트 발행");
-        eventProducer.publishEvent("user-register-topic",
-                new UserRegisteredEvent("test-userId", "test@teambind.co.kr","test-token"));
-        return "Test event published!";
-    }
 }

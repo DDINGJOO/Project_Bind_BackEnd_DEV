@@ -3,6 +3,7 @@ package bind.auth.service;
 import bind.auth.entity.User;
 
 
+import event.dto.EmailVerificationEvent;
 import event.dto.UserRegisteredEvent;
 import event.dto.UserWithdrawEvent;
 import event.producer.EventProducer;
@@ -33,14 +34,25 @@ public class EventPubService {
         String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
 
 
-        eventProducer.publishEvent("user-registered-topic",
-                new UserRegisteredEvent(user.getId(), user.getEmail(),token)
+        eventProducer.publishEvent("user-email-verification-topic",
+                new EmailVerificationEvent(user.getId(), user.getEmail(),token)
         );
     }
+
+
 
     public void kafkaUserWithdrawal(User user) {
         log.info("called kafkaUserWithdrawal");
         eventProducer.publishEvent("user-withdrawal-topic",
                 new UserWithdrawEvent(user.getEmail()));
+    }
+
+
+    public void kafkaUserRegistered(User user) {
+        log.info("called kafkaUserRegistered");
+        String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
+
+        eventProducer.publishEvent("user-registered-topic",
+                new UserRegisteredEvent(user.getId(), token));
     }
 }

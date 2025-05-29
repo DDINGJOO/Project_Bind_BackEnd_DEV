@@ -175,7 +175,10 @@ public class AuthController {
     ) {
         log.info("Call Confirm Email with token: {}", token);
         try {
-            authService.confirmEmail(token);
+            var user = authService.confirmEmail(token);
+            eventPubService.kafkaUserRegistered(user);
+
+
             return ResponseEntity.ok(BaseResponse.success());
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));

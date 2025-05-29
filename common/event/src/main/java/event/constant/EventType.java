@@ -6,6 +6,5 @@ public enum EventType {
     PASSWORD_RESET,
     USER_DELETED,
     USER_WITHDRAWN,
-
     PROFILE_UPDATED,
 }

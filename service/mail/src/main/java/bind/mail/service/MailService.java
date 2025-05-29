@@ -3,6 +3,7 @@ package bind.mail.service;
 
 
 
+import event.dto.EmailVerificationEvent;
 import event.dto.UserRegisteredEvent;
 import event.dto.UserWithdrawEvent;
 import jakarta.mail.MessagingException;
@@ -19,7 +20,7 @@ public class MailService {
 
     private final JavaMailSender mailSender;
 
-    public void sendVerificationEmail(UserRegisteredEvent payload) {
+    public void sendVerificationEmail(EmailVerificationEvent payload) {
 
         //TODO : MAIL PATH  CHECK
         System.out.println("This is MailService.sendVerificationEmail() \n email : " + payload.getEmail() + "\n token :" + payload.getToken());
