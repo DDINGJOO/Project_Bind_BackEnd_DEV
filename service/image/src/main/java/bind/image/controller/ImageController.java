@@ -1,5 +1,6 @@
 package bind.image.controller;
 
+import bind.image.dto.response.ImageResponse;
 import bind.image.dto.response.ImageUploadResponse;
 import bind.image.dto.response.NsfwDetectionResult;
 import bind.image.exception.ImageException;
@@ -42,11 +43,11 @@ public class ImageController {
 
 
     @GetMapping
-    public ResponseEntity<BaseResponse<List<String>>> getUrls(@RequestParam ImageCategory category,
-                                                                   @RequestParam String referenceId) {
+    public ResponseEntity<BaseResponse<List<ImageResponse>>> getUrls(@RequestParam ImageCategory category,
+                                                                     @RequestParam String referenceId) {
         try {
-            List<String> urls = imageFileService.getImageUrls(category, referenceId);
-            return ResponseEntity.ok(BaseResponse.success(urls));
+            List<ImageResponse> imageUrls = imageFileService.getImageUrls(category, referenceId);
+            return ResponseEntity.ok(BaseResponse.success(imageUrls));
         } catch (ImageException e) {
             return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
         }

@@ -1,5 +1,6 @@
 package bind.image.service;
 
+import bind.image.dto.response.ImageResponse;
 import bind.image.dto.response.ImageUploadResponse;
 import bind.image.entity.ImageFile;
 import bind.image.exception.ImageErrorCode;
@@ -17,6 +18,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+
+import static java.util.Locale.filter;
 
 @Service
 @RequiredArgsConstructor
@@ -69,9 +72,19 @@ public class ImageFileService {
                 .build();
     }
 
-    public List<String> getImageUrls(ImageCategory category, String referenceId) {
-        return imageFileRepository.findByCategoryAndReferenceId(category, referenceId).stream()
-                .map(ImageFile::getStoredPath)
+    public List<ImageResponse> getImageUrls(ImageCategory category, String referenceId) {
+        List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(
+                category, referenceId);
+
+        if (images.isEmpty()) {
+            throw new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
+        }
+        return images.stream()
+                .filter(image -> image.getStatus() == ImageStatus.CONFIRMED )
+                .map(image -> ImageResponse.builder()
+                        .id(image.getId())
+                        .url(image.getStoredPath())
+                        .build())
                 .toList();
     }
 

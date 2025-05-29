@@ -15,4 +15,5 @@ public interface ImageFileRepository extends JpaRepository<ImageFile, Long> {
     ImageFile findByStatus(ImageStatus imageStatus);
 
 
+    List<ImageFile> findByCategoryAndReferenceIdAndStatusIn(ImageCategory category, String referenceId, List<ImageStatus> confirmed);
 }
