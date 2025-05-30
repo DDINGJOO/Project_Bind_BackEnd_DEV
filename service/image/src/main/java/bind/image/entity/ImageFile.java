@@ -33,6 +33,8 @@ public class ImageFile {
     // 썸네일 경로 (선택)
     private String thumbnailPath;
 
+    boolean isThumbnail;
+
     // MIME 타입 (image/jpeg 등)
     private String contentType;
 
