@@ -25,5 +25,4 @@ public class ConsentHistory {
     private boolean agreed;
     private LocalDateTime agreedAt;
     private String agreementVersion;
-    private String source;
 }

@@ -30,7 +30,13 @@ public class ImageFileService {
 
 
 
-    public ImageUploadResponse upload(MultipartFile file, ResourceCategory category, String referenceId, String uploaderId, ImageVisibility visibility) {
+    public ImageUploadResponse upload(MultipartFile file,
+                                      ResourceCategory category,
+                                      String referenceId,
+                                      String uploaderId,
+                                      ImageVisibility visibility,
+                                      Boolean isThumbnail
+    ) {
         String uuid = UUID.randomUUID().toString();
         String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
 
@@ -57,6 +63,7 @@ public class ImageFileService {
                 .contentType(file.getContentType())
                 .fileSize(file.getSize())
                 .category(category)
+                .isThumbnail(isThumbnail)
                 .referenceId(referenceId)
                 .uploaderId(uploaderId)
                 .status(status)
@@ -83,6 +90,7 @@ public class ImageFileService {
                 .filter(image -> image.getStatus() == ImageStatus.CONFIRMED )
                 .map(image -> ImageResponse.builder()
                         .id(image.getId())
+                        .isThumbnail(image.isThumbnail())
                         .url(image.getStoredPath())
                         .build())
                 .toList();

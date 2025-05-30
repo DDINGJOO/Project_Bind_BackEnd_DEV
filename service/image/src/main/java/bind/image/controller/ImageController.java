@@ -29,13 +29,15 @@ public class ImageController {
                                                       @RequestParam ResourceCategory category,
                                                       @RequestParam String referenceId,
                                                       @RequestParam String uploaderId,
-                                                      @RequestParam(defaultValue = "PUBLIC") ImageVisibility visibility) {
+                                                      @RequestParam(defaultValue = "PUBLIC") ImageVisibility visibility,
+                                                                    @RequestParam (defaultValue = "false") Boolean isThumbnail
+    ) {
 
 
         log.info("Image upload request: category={}, referenceId={}, uploaderId={}, visibility={}",
                 category, referenceId, uploaderId, visibility);
         try {
-            var result = imageFileService.upload(file, category, referenceId, uploaderId, visibility);
+            var result = imageFileService.upload(file, category, referenceId, uploaderId, visibility, isThumbnail);
             return ResponseEntity.ok(BaseResponse.success(result));
         } catch (ImageException e) {
            return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));
