@@ -176,7 +176,7 @@ public class AuthController {
         log.info("Call Confirm Email with token: {}", token);
         try {
             var user = authService.confirmEmail(token);
-            eventPubService.kafkaUserRegistered(user);
+            eventPubService.userRegistered(user);
 
 
             return ResponseEntity.ok(BaseResponse.success());
