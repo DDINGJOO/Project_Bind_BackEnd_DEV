@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "user_profile")
@@ -50,4 +51,7 @@ public class UserProfile {
 
     @Column
     private LocalDateTime updatedAt;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
+    private List<UserInterest> userInterests;
 }
