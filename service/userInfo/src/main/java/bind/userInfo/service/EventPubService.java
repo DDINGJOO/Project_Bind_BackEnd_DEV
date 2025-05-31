@@ -1,15 +1,13 @@
 package bind.userInfo.service;
 
-import bind.userInfo.entity.UserProfile;
-import event.dto.EmailVerificationEvent;
-import event.dto.ProfileCreatedEvent;
-import event.dto.UserRegisteredEvent;
-import event.dto.UserWithdrawEvent;
-import event.producer.EventProducer;
+
+import event.constant.EventType;
+import event.domain.Event;
+import event.dto.ProfileCreatedEventPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import outbox.OutboxService;
+import outbox.OutboxPublisher;
 import security.jwt.JwtProvider;
 
 @Service
@@ -17,20 +15,42 @@ import security.jwt.JwtProvider;
 @Slf4j
 
 public class EventPubService {
-    private final OutboxService outboxService;
+    private final JwtProvider tokenProvider;
+    private final UserProfileService userProfileService;
+    private final OutboxPublisher outboxService;
 
 
     public void userProfileCreatedEvent(String userId) {
         log.info("called userProfileCreatedEvent");
 
-        ProfileCreatedEvent event = new ProfileCreatedEvent(userId);
+        ProfileCreatedEventPayload event = new ProfileCreatedEventPayload(userId);
 
         // outboxService.saveMessage(토픽명, 키, 이벤트객체);
-        outboxService.saveMessage(
-                "user-profile-created-topic",  // topic
-                userId,                       // key (PK나 고유값)
-                event                         // payload (자동 직렬화)
+        Event<ProfileCreatedEventPayload>
+                profileCreatedEvent = new Event<>(
+                EventType.USER_PROFILE_CREATED,
+                System.currentTimeMillis(),
+                event
         );
-    }
+        outboxService.saveEvent("user-profile-created-topic", profileCreatedEvent);
 
+    }
+/*
+    public void emailVerification(User user) {
+        log.info("called emailVerification");
+        String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
+
+        EmailVerificationEventPayload payload = new EmailVerificationEventPayload(
+                user.getId(), user.getEmail(), token
+        );
+
+        Event<EmailVerificationEventPayload> event = new Event<>(
+                EventType.EMAIL_VERIFICATION,
+                System.currentTimeMillis(),
+                payload
+        );
+
+        outboxService.saveEvent("user-email-verification-topic", event);
+    }
+ */
 }

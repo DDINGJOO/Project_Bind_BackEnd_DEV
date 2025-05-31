@@ -1,6 +1,7 @@
 package bind.auth;
 
 
+import event.config.KafkaEventConfig;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -8,6 +9,7 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import security.jwt.JwtProperties;
@@ -16,6 +18,7 @@ import security.jwt.JwtProperties;
 @EnableScheduling
 @SpringBootApplication(exclude = {SecurityAutoConfiguration.class})
 @EnableConfigurationProperties(JwtProperties.class)
+@Import(KafkaEventConfig.class)
 @ComponentScan(basePackages = {
         "bind.auth",              // 기본 패키지
         "security",                // 공통 security 모듈

@@ -3,16 +3,16 @@ package bind.auth.service;
 import bind.auth.entity.User;
 
 
-import event.dto.EmailVerificationEvent;
-import event.dto.UserRegisteredEvent;
-import event.dto.UserWithdrawEvent;
-import event.producer.EventProducer;
+import event.constant.EventType;
+import event.domain.Event;
+import event.dto.EmailVerificationEventPayload;
+import event.dto.UserRegisteredEventPayload;
+import event.dto.UserWithdrawEventPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import outbox.OutboxService;
+import outbox.OutboxPublisher;
 import security.jwt.JwtProvider;
-
 
 
 @Service
@@ -22,40 +22,60 @@ public class EventPubService {
 
     private final JwtProvider tokenProvider;
     private final AuthService authService;
-    private final OutboxService outboxService;  // 추가
+    private final OutboxPublisher outboxService;
 
     /**
-     * 이메일 인증 이벤트를 Outbox에 저장(발행 예약)
+     * 이메일 인증 이벤트 발행
      */
     public void emailVerification(User user) {
         log.info("called emailVerification");
         String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
 
-        outboxService.saveMessage(
-                "user-email-verification-topic",
-                user.getId(),
-                new EmailVerificationEvent(user.getId(), user.getEmail(), token)
+        EmailVerificationEventPayload payload = new EmailVerificationEventPayload(
+                user.getId(), token ,user.getEmail()
         );
+
+        Event<EmailVerificationEventPayload> event = new Event<>(
+                EventType.EMAIL_VERIFICATION,
+                System.currentTimeMillis(),
+                payload
+        );
+
+        outboxService.saveEvent("user-email-verification-topic", event);
     }
 
-    public void userWithdrawal(User user) {
-        log.info("called userWithdrawal");
-
-        outboxService.saveMessage(
-                "user-withdrawal-topic",
-                user.getId(),
-                new UserWithdrawEvent(user.getId(), user.getEmail())
-        );
-    }
-
+    /**
+     * 회원가입 이벤트 발행
+     */
     public void userRegistered(User user) {
         log.info("called userRegistered");
         String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
 
-        outboxService.saveMessage(
-                "user-registered-topic",
-                user.getId(),
-                new UserRegisteredEvent(user.getId(), token)
+        UserRegisteredEventPayload payload = new UserRegisteredEventPayload(user.getId(), token);
+
+        Event<UserRegisteredEventPayload> event = new Event<>(
+                EventType.USER_REGISTERED,
+                System.currentTimeMillis(),
+                payload
         );
+
+        outboxService.saveEvent("user-registered-topic", event);
+    }
+
+    /**
+     * 회원탈퇴 이벤트 발행
+     */
+    public void userWithdrawal(User user) {
+        log.info("called userWithdrawal");
+
+        UserWithdrawEventPayload payload = new UserWithdrawEventPayload(user.getId(), user.getEmail());
+
+        Event<UserWithdrawEventPayload> event = new Event<>(
+                EventType.USER_WITHDRAWN,
+                System.currentTimeMillis(),
+                payload
+        );
+
+        outboxService.saveEvent("user-withdrawal-topic",  event);
     }
 }

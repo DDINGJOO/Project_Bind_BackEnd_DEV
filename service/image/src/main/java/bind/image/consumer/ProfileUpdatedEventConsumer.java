@@ -2,36 +2,36 @@ package bind.image.consumer;
 
 import bind.image.service.ImageFileService;
 import event.constant.EventType;
-import event.dto.ProfileUpdatedEvent;
-import event.dto.UserRegisteredEvent;
+import event.domain.Event;
+import event.dto.ProfileUpdatedEventPayload;
 import event.handler.EventHandler;
 import lombok.RequiredArgsConstructor;
-import org.springframework.kafka.annotation.KafkaListener;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
-public class ProfileUpdatedEventConsumer implements EventHandler<ProfileUpdatedEvent> {
+public class ProfileUpdatedEventConsumer implements EventHandler<ProfileUpdatedEventPayload> {
 
     private final ImageFileService imageFileService;
-
-
 
     @Override
     public EventType supportedType() {
         return EventType.USER_PROFILE_UPDATED;
     }
 
-
     @Override
-    public void handle(ProfileUpdatedEvent event) {
-        if(event == null || event.getImageId() == null) {
-            return; // 이벤트가 없거나 이미지 ID가 없는 경우 처리하지 않음
+    public void handle(Event<ProfileUpdatedEventPayload> event) {
+        ProfileUpdatedEventPayload payload = event.getPayload();
+
+        if (payload == null || payload.getImageId() == null) {
+            log.warn("ProfileUpdatedEventPayload is null or missing imageId. Skipping.");
+            return;
         }
 
-        imageFileService.confirmImage(
-                event.getImageId()
-        );
+        log.info("Processing profile image update for imageId: {}", payload.getImageId());
+
+        imageFileService.confirmImage(payload.getImageId());
     }
 }
-
