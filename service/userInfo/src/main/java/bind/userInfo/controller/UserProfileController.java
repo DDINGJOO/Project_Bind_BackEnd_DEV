@@ -4,7 +4,10 @@ package bind.userInfo.controller;
 import bind.userInfo.dto.request.UserProfileCreateRequest;
 import bind.userInfo.dto.request.UserProfileUpdateRequest;
 import bind.userInfo.dto.response.UserProfileSummaryResponse;
+import bind.userInfo.exception.ProfileException;
+import bind.userInfo.service.EventPubService;
 import bind.userInfo.service.UserProfileService;
+import data.BaseResponse;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,7 @@ import java.util.List;
 public class UserProfileController {
 
     private final UserProfileService userProfileService;
+    private final EventPubService eventPubService;
 
     // 1. 단건 조회 (흥미/관심 목록 포함)
     @GetMapping("/{userId}")
@@ -44,11 +48,27 @@ public class UserProfileController {
 
     // 3. 생성
     @PostMapping
-    public ResponseEntity<UserProfileSummaryResponse> createProfile(
+    public ResponseEntity<BaseResponse<UserProfileSummaryResponse>> createProfile(
             @RequestBody UserProfileCreateRequest request
     ) {
-        return ResponseEntity.ok(userProfileService.create(request));
+        UserProfileSummaryResponse response;
+        try{
+            response = userProfileService.create(request);
+        }catch (ProfileException e){
+            return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.error("프로필 생성 중 오류가 발생했습니다."));
+        }
+
+        try{
+            eventPubService.kafkaUserProfileCreated(response.getUserId());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.error("카프카 메세지 발행 중 오류가 발생했습니다."));
+        }
+        return ResponseEntity.ok(BaseResponse.success(response));
     }
+
+
 
     // 4. 업데이트 (부분/전체)
     @PatchMapping("/{userId}")
