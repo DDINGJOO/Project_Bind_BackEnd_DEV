@@ -19,7 +19,7 @@ public class ProfileUpdatedEventConsumer implements EventHandler<ProfileUpdatedE
 
     @Override
     public EventType supportedType() {
-        return EventType.PROFILE_UPDATED;
+        return EventType.USER_PROFILE_UPDATED;
     }
 
 

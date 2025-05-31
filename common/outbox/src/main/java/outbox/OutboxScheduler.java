@@ -12,8 +12,9 @@ import java.util.List;
 public class OutboxScheduler {
 
     private final OutboxMessageRepository outboxRepo;
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
     private final OutboxService outboxService;
+
 
     @Scheduled(fixedDelay = 5000)
     public void publishOutboxMessages() {
