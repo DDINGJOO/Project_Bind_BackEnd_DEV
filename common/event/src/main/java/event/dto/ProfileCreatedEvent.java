@@ -9,15 +9,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class ProfileUpdatedEvent extends BaseEvent {
+public class ProfileCreatedEvent extends BaseEvent {
     private String userId;
-    private Long imageId;
 
 
-    public ProfileUpdatedEvent(String userId,Long imageId) {
-        super(EventType.USER_PROFILE_UPDATED);
+
+    public ProfileCreatedEvent(String userId) {
+        super(EventType.USER_PROFILE_CREATED);
         this.userId = userId;
-        this.imageId = imageId;
 
     }
 }
