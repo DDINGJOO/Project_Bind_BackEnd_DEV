@@ -1,3 +1,4 @@
+package outbox;
 
 public class OutboxException extends RuntimeException {
     public OutboxException(String message, Throwable cause) {

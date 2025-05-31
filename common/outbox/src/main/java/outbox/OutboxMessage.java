@@ -1,3 +1,5 @@
+package outbox;
+
 import jakarta.persistence.*;
 import lombok.*;
 

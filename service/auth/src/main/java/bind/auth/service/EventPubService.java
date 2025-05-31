@@ -10,49 +10,52 @@ import event.producer.EventProducer;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import outbox.OutboxService;
 import security.jwt.JwtProvider;
+
 
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
-
 public class EventPubService {
 
-    private  final JwtProvider tokenProvider;
-    private final EventProducer eventProducer;
+    private final JwtProvider tokenProvider;
     private final AuthService authService;
+    private final OutboxService outboxService;  // 추가
 
     /**
-     * 이메일 인증 이벤트를 카프카에 발행합니다.
-     *
-     * @param user 인증이 필요한 사용자 정보
+     * 이메일 인증 이벤트를 Outbox에 저장(발행 예약)
      */
-    public void kafkaEmailVerification(User user)
-    {
-        log.info("called kafkaEmailVerification");
+    public void emailVerification(User user) {
+        log.info("called emailVerification");
         String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
 
-
-        eventProducer.publishEvent("user-email-verification-topic",
-                new EmailVerificationEvent(user.getId(), user.getEmail(),token)
+        outboxService.saveMessage(
+                "user-email-verification-topic",
+                user.getId(),
+                new EmailVerificationEvent(user.getId(), user.getEmail(), token)
         );
     }
 
+    public void userWithdrawal(User user) {
+        log.info("called userWithdrawal");
 
-
-    public void kafkaUserWithdrawal(User user) {
-        log.info("called kafkaUserWithdrawal");
-        eventProducer.publishEvent("user-withdrawal-topic",
-                new UserWithdrawEvent(user.getId(),user.getEmail()));
+        outboxService.saveMessage(
+                "user-withdrawal-topic",
+                user.getId(),
+                new UserWithdrawEvent(user.getId(), user.getEmail())
+        );
     }
 
-
-    public void kafkaUserRegistered(User user) {
-        log.info("called kafkaUserRegistered");
+    public void userRegistered(User user) {
+        log.info("called userRegistered");
         String token = tokenProvider.createAccessToken(authService.tokenParams(user.getId()));
 
-        eventProducer.publishEvent("user-registered-topic",
-                new UserRegisteredEvent(user.getId(), token));
+        outboxService.saveMessage(
+                "user-registered-topic",
+                user.getId(),
+                new UserRegisteredEvent(user.getId(), token)
+        );
     }
 }

@@ -64,7 +64,7 @@ public class AuthWithdrawController {
 
         try {
             User user =authService.withdraw(userId, request);
-            eventPubService.kafkaUserWithdrawal(user);
+            eventPubService.userWithdrawal(user);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));

@@ -19,6 +19,7 @@ dependencies {
     implementation project(':common:security')
     implementation project(':common:logging')
     implementation project(':common:event')
+    implementation project(":common:outbox")
 
 
     implementation 'com.h2database:h2'

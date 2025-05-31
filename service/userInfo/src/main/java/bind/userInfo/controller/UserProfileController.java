@@ -61,7 +61,7 @@ public class UserProfileController {
         }
 
         try{
-            eventPubService.kafkaUserProfileCreated(response.getUserId());
+            eventPubService.userProfileCreatedEvent(response.getUserId());
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(BaseResponse.error("카프카 메세지 발행 중 오류가 발생했습니다."));
         }

@@ -18,6 +18,8 @@ import security.jwt.JwtProperties;
         "security",                // 공통 security 모듈
         "logging",
         "event",                // 이벤트 모듈
+        "data",                 // 공통 데이터 모듈\
+        "outbox"                // Outbox 모듈
 })
 public class UserInfoApplication {
 
