@@ -15,4 +15,6 @@ public interface UserInterestRepository extends JpaRepository<UserInterest, Long
 
     void deleteAllByUserId(String userId);
 
+
+
 }

@@ -10,7 +10,6 @@ import bind.userInfo.exception.ProfileErrorCode;
 import bind.userInfo.exception.ProfileException;
 import bind.userInfo.repository.UserInterestRepository;
 import bind.userInfo.repository.UserProfileRepository;
-import bind.userInfo.repository.UserProfileSpecs;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import lombok.RequiredArgsConstructor;
@@ -42,21 +41,19 @@ public class UserProfileService {
     // 전체 유저 프로필 페이징 + 닉네임, 지역, 관심사(악기) 필터 조합
     public Page<UserProfileSummaryResponse> searchProfiles(
             String nickname, Location location, List<Instrument> interests, Pageable pageable) {
-        Specification<UserProfile> spec = UserProfileSpecs.withFilters(nickname, location, interests);
-        Page<UserProfile> profiles = userProfileRepository.findAll(spec, pageable);
 
-        // 흥미목록 같이 넘기기
-        List<String> userIds = profiles.getContent().stream()
-                .map(UserProfile::getUserId).collect(Collectors.toList());
-        List<UserInterest> allInterests = userInterestRepository.findByUserIdIn(userIds);
+        boolean interestsEmpty = (interests == null || interests.isEmpty());
 
-        // userId → 관심사 맵
-        var interestMap = allInterests.stream().collect(Collectors.groupingBy(UserInterest::getUserId));
+        // 바로 쿼리로!
+        Page<UserProfile> profiles = userProfileRepository.searchProfiles(
+                nickname, location, interests, interestsEmpty, pageable);
 
+        // 이미 fetch join이면 userInterests가 자동으로 채워져 있음
         Page<UserProfileSummaryResponse> result = profiles.map(p -> {
-            List<UserInterest> iList = interestMap.getOrDefault(p.getUserId(), List.of());
+            List<UserInterest> iList = p.getUserInterests(); // getter 이용
             return toResponse(p, iList);
         });
+
         return result;
     }
 
