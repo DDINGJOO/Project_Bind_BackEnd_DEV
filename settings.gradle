@@ -8,7 +8,7 @@ include 'common:util'
 include 'common:security'
 include 'common:logging'
 include 'common:event'
-include('common:outbox')
+include 'common:outbox'
 
 
 include 'service'
