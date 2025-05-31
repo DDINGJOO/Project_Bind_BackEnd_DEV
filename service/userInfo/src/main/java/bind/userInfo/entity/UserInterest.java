@@ -1,5 +1,6 @@
 package bind.userInfo.entity;
 
+import data.enums.instrument.Instrument;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -20,8 +21,9 @@ public class UserInterest {
     @Column(name = "user_id", nullable = false, length = 36)
     private String userId; // FK: user_profile.userId
 
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 32)
-    private String interest; // ex: "Jazz", "React", "드럼"
+    private Instrument interest; // ex: "Jazz", "React", "드럼"
 
     @Column(nullable = false)
     private LocalDateTime createdAt;

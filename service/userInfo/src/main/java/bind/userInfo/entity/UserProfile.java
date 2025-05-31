@@ -1,9 +1,7 @@
 package bind.userInfo.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import data.enums.location.Location;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -38,8 +36,8 @@ public class UserProfile {
     @Column
     private LocalDateTime birthdate;
 
-    @Column(length = 64)
-    private String location;
+    @Enumerated(EnumType.STRING)
+    private Location location;
 
     @Column
     private LocalDateTime lastActiveAt;
