@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 public class UserProfileUpdateRequest {
     private String nickname;
-    private String profileImageUrl;
+    private String profileImageId;
     private String introduction;
     private Location location;
     private Boolean profilePublic;

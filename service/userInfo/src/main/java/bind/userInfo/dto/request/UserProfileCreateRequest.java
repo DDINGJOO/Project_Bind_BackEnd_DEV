@@ -14,7 +14,7 @@ import java.util.List;
 public class UserProfileCreateRequest {
     private String userId;
     private String nickname;
-    private String profileImageUrl;
+    private String profileImageId;
     private String introduction;
     private Location location;
     private String gender;

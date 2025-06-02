@@ -22,8 +22,8 @@ public class UserProfile {
     @Column(nullable = false, length = 32)
     private String nickname;
 
-    @Column(name = "profile_image_url", length = 200)
-    private String profileImageUrl; // image-service 연동
+    @Column(name = "profile_image_id", length = 100)
+    private String profileImageId; // image-service 연동
 
     @Column(length = 200)
     private String introduction;

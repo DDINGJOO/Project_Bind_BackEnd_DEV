@@ -15,6 +15,7 @@ import data.enums.location.Location;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -61,7 +62,7 @@ public class UserProfileService {
         UserProfile profile = UserProfile.builder()
                 .userId(req.getUserId())
                 .nickname(req.getNickname())
-                .profileImageUrl(req.getProfileImageUrl())
+                .profileImageId(req.getProfileImageId())
                 .introduction(req.getIntroduction())
                 .location(req.getLocation())
                 .profilePublic(req.getProfilePublic())
@@ -90,7 +91,7 @@ public class UserProfileService {
         UserProfileSummaryResponse dto = new UserProfileSummaryResponse();
         dto.setUserId(p.getUserId());
         dto.setNickname(p.getNickname());
-        dto.setProfileImageId(p.getProfileImageUrl());
+        dto.setProfileImageId(p.getProfileImageId());
         dto.setIntroduction(p.getIntroduction());
         dto.setLocation(p.getLocation());
         dto.setProfilePublic(p.getProfilePublic());
@@ -118,7 +119,7 @@ public class UserProfileService {
 
         // 2. 변경 필드 반영
         if (req.getNickname() != null) profile.setNickname(req.getNickname());
-        if (req.getProfileImageUrl() != null) profile.setProfileImageUrl(req.getProfileImageUrl());
+        if (req.getProfileImageId() != null) profile.setProfileImageId(req.getProfileImageId());
         if (req.getIntroduction() != null) profile.setIntroduction(req.getIntroduction());
         if (req.getLocation() != null) profile.setLocation(req.getLocation());
         if (req.getProfilePublic() != null) profile.setProfilePublic(req.getProfilePublic());
