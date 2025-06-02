@@ -1,0 +1,18 @@
+package bind.message.repository;
+
+import bind.message.entity.Message;
+import bind.message.entity.MessageBackup;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+
+@Repository
+public interface MessageBackupRepository  extends JpaRepository<MessageBackup, Long> {
+
+    Page<Message> findBySenderId(String senderId, Pageable pageable);
+    Page<Message> findByReceiverId(String receiverId, Pageable pageable);
+
+
+}
