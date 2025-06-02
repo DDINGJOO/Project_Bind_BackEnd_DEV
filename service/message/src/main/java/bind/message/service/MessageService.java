@@ -35,7 +35,7 @@ public class MessageService {
     }
 
 
-    public Void sendMessage(MessageSendRequest req,String senderId)
+    public void sendMessage(MessageSendRequest req,String senderId)
     {
         Message message = Message.builder()
                 .senderId(senderId)
@@ -49,6 +49,7 @@ public class MessageService {
                 .build();
 
         messageRepository.save(message);
+
     }
 
     public MessageResponse getMessage(Long messageId)
