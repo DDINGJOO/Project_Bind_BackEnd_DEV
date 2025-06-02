@@ -6,6 +6,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -14,6 +15,9 @@ public interface MessageRepository  extends JpaRepository<Message, Long> {
 
     Page<Message> findBySenderId(String senderId, Pageable pageable);
     Page<Message> findByReceiverId(String receiverId, Pageable pageable);
+
+
+    List<Message> findAllBySenderDeletedAtIsNotNullAndReceiverDeletedAtIsNotNull();
 
 
 }

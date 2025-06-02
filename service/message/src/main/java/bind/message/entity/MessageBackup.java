@@ -36,7 +36,6 @@ public class MessageBackup {
 
     private LocalDateTime senderDeletedAt;
     private LocalDateTime receiverDeletedAt;
-    private LocalDateTime readAt;
 
     // 추가: 삭제 이관 시점, 삭제 요청자, 삭제 요청 IP 등
     private LocalDateTime movedAt;
