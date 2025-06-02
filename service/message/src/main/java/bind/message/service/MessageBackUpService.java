@@ -4,6 +4,7 @@ import bind.message.entity.Message;
 import bind.message.entity.MessageBackup;
 import bind.message.repository.MessageBackupRepository;
 import bind.message.repository.MessageRepository;
+import bind.message.repository.UserTableRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -18,6 +19,7 @@ public class MessageBackUpService {
 
     private final MessageRepository messageRepository;
     private final MessageBackupRepository messageBackupRepository;
+    private final UserTableRepository userTableRepository;
 
 
     @Scheduled(cron = "0 0 3 * * *")

@@ -12,6 +12,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -33,9 +35,20 @@ public class MessageService {
     }
 
 
-    public MessageSimpleResponse sendMessage(MessageSendRequest req)
+    public Void sendMessage(MessageSendRequest req,String senderId)
     {
-        return null;
+        Message message = Message.builder()
+                .senderId(senderId)
+                .receiverId(req.receiverId())
+                .contents(req.content())
+                .createdAt(LocalDateTime.now())
+                .subject(req.subject())
+                .senderDeletedAt(null)
+                .receiverDeletedAt(null)
+                .readAt(null)
+                .build();
+
+        messageRepository.save(message);
     }
 
     public MessageResponse getMessage(Long messageId)
