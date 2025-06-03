@@ -5,13 +5,14 @@ import bind.message.service.UserProfileSnapshotService;
 import event.constant.EventType;
 import event.domain.Event;
 import event.dto.ProfileUpdatedEventPayload;
+import event.dto.UserProfileUpdatedEventPayload;
 import event.handler.EventHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 @Component
 @RequiredArgsConstructor
-public class UserProfileUpdateEventHandler  implements EventHandler<ProfileUpdatedEventPayload> {
+public class UserProfileUpdateEventHandler  implements EventHandler<UserProfileUpdatedEventPayload> {
     private final UserProfileSnapshotService userProfileSnapshotService;
 
     @Override
@@ -20,9 +21,9 @@ public class UserProfileUpdateEventHandler  implements EventHandler<ProfileUpdat
     }
 
     @Override
-    public void handle(Event<ProfileUpdatedEventPayload> event) {
+    public void handle(Event<UserProfileUpdatedEventPayload> event) {
         // 실제 사용자 프로필 업데이트 후 처리할 비즈니스 로직 수행
-        ProfileUpdatedEventPayload payload = event.getPayload();
+        UserProfileUpdatedEventPayload payload = event.getPayload();
 
         userProfileSnapshotService.upDateUser(payload);
 

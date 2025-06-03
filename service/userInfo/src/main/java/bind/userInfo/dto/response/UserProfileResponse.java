@@ -7,7 +7,7 @@ import lombok.Data;
 public class UserProfileResponse {
     private String userId;
     private String nickname;
-    private String profileImageId;
+    private String profileImageUrl;
     private String introduction;
     private Location location;
     private String gender;

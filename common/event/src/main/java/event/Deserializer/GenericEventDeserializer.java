@@ -7,10 +7,8 @@ import event.constant.EventType;
 import event.domain.Event;
 import event.domain.EventPayload;
 import event.dto.EmailVerificationEventPayload;
-import event.dto.ProfileCreatedEventPayload;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
-import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.io.IOException;
 import java.util.HashMap;

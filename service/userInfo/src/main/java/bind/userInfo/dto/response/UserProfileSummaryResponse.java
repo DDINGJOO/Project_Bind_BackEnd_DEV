@@ -10,7 +10,7 @@ import java.util.List;
 public class UserProfileSummaryResponse {
     private String userId;
     private String nickname;
-    private String profileImageId;
+    private String profileImageUrl;
     private String introduction;
     private Location location;
     private Boolean profilePublic;
