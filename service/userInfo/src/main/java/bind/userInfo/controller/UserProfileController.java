@@ -8,6 +8,7 @@ import bind.userInfo.exception.ProfileException;
 import bind.userInfo.service.EventPubService;
 import bind.userInfo.service.UserProfileService;
 import data.BaseResponse;
+import data.enums.Genre;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import lombok.RequiredArgsConstructor;
@@ -41,10 +42,11 @@ public class UserProfileController {
             @RequestParam(required = false) String nickname,
             @RequestParam(required = false) Location location,
             @RequestParam(required = false) List<Instrument> interests, // /?interests=DRUM&interests=VOCAL
+            @RequestParam(required = false) List<Genre> genres, // /?genres=ROCK&genres=POP
             @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<UserProfileSummaryResponse> profiles = userProfileService.searchProfiles(
-                nickname, location, interests, pageable
+                nickname, location, interests, genres,pageable
         );
 
         Page<BaseResponse<UserProfileSummaryResponse>> responsePage = profiles.map(BaseResponse::success);

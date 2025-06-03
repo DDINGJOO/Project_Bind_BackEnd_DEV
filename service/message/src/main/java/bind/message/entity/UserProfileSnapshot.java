@@ -19,8 +19,11 @@ public class UserProfileSnapshot {
 
     @Id
     String userId;
-
     String profileUrl;
     String nickName;
+
+    Long unReadMessageCount;
+    Long sendMessageCount;
+    Long receiveMessageCount;
 }
 

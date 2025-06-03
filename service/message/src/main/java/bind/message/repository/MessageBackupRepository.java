@@ -11,8 +11,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MessageBackupRepository  extends JpaRepository<MessageBackup, Long> {
 
-    Page<Message> findBySenderId(String senderId, Pageable pageable);
-    Page<Message> findByReceiverId(String receiverId, Pageable pageable);
 
 
 }

@@ -54,4 +54,10 @@ public class UserProfile {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
     private List<UserInterest> userInterests;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
+    private List<UserGenre> userGenres;
+
+
+
 }
