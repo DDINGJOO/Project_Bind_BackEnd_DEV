@@ -19,4 +19,20 @@ public class ImageUtil {
         ImageIO.write(input, "webp", os);
         return os.toByteArray();
     }
+
+    public static byte[] toWebpThumbnail(MultipartFile file, int width, int height, float quality) throws IOException {
+        BufferedImage input = ImageIO.read(file.getInputStream());
+        if (input == null) throw new IOException("이미지 포맷을 읽을 수 없습니다");
+        BufferedImage thumb = resize(input, width, height);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        ImageIO.write(thumb, "webp", os);
+        return os.toByteArray();
+    }
+
+    // 아래는 간단한 리사이즈 util (썸네일용)
+    private static BufferedImage resize(BufferedImage img, int width, int height) {
+        BufferedImage output = new BufferedImage(width, height, img.getType());
+        output.getGraphics().drawImage(img, 0, 0, width, height, null);
+        return output;
+    }
 }
