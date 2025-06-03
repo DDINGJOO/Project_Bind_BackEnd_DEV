@@ -13,8 +13,8 @@ import java.util.Optional;
 @Repository
 public interface MessageRepository  extends JpaRepository<Message, Long> {
 
-    Page<Message> findBySenderId(String senderId, Pageable pageable);
-    Page<Message> findByReceiverId(String receiverId, Pageable pageable);
+    Page<Message> findAllBySenderId(String senderId, Pageable pageable);
+    Page<Message> findAllByReceiverId(String receiverId, Pageable pageable);
 
 
     List<Message> findAllBySenderDeletedAtIsNotNullAndReceiverDeletedAtIsNotNull();
