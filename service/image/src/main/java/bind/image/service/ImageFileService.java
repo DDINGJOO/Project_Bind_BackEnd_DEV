@@ -6,11 +6,13 @@ import bind.image.entity.ImageFile;
 import bind.image.exception.ImageErrorCode;
 import bind.image.exception.ImageException;
 import bind.image.repository.ImageFileRepository;
+import bind.image.util.ImageUtil;
 import data.enums.ResourceCategory;
 import data.enums.image.ImageStatus;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -21,14 +23,16 @@ import java.util.UUID;
 
 import static java.util.Locale.filter;
 
+
 @Service
 @RequiredArgsConstructor
 public class ImageFileService {
-    private final ImageFileRepository imageFileRepository;
 
+    private final ImageFileRepository imageFileRepository;
     private final LocalImageStorage imageStorage;
 
-
+    @Value("${image.upload.nginx.url}")
+    private String publicUrlPrefix;
 
     public ImageUploadResponse upload(MultipartFile file,
                                       ResourceCategory category,
@@ -38,30 +42,28 @@ public class ImageFileService {
                                       Boolean isThumbnail
     ) {
         String uuid = UUID.randomUUID().toString();
-        String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-
-        String fileName = uuid + extension;
+        String webpFileName = uuid + ".webp";
         String datePath = LocalDateTime.now().toLocalDate().toString().replace("-", "/");
-        String storedPath = "/upload/images/" + category.name() + "/" + datePath + "/" + fileName;
+        String storedPath = "/" + category.name() + "/" + datePath + "/" + webpFileName;
 
-        imageStorage.store(file, storedPath);
+        // WebP 변환 및 저장
+        try {
+            byte[] webpBytes = ImageUtil.toWebp(file, 0.8f);
+            imageStorage.store(webpBytes, storedPath);
+        } catch (Exception e) {
+            throw new ImageException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
+        }
 
-
-
-        //TODO : 실제 NSFW 감지 로직 구현 후 제거
-        boolean isSafe = true;
-
-
-        ImageStatus status = isSafe ? ImageStatus.TEMP  : ImageStatus.REJECTED;
-
+        // (NSFW 등 안전성 검사 후) 임시상태로 등록
+        ImageStatus status = ImageStatus.TEMP;
 
         ImageFile imageFile = ImageFile.builder()
-                .uuidName(fileName)
+                .uuidName(webpFileName)
                 .originalName(file.getOriginalFilename())
                 .storedPath(storedPath)
-                .thumbnailPath(null) // 썸네일 생성 미적용 상태
-                .contentType(file.getContentType())
-                .fileSize(file.getSize())
+                .url(publicUrlPrefix + storedPath)
+                .contentType("image/webp")
+                .fileSize(file.getSize()) // 원본 사이즈 (WebP로 바뀌어도 무방)
                 .category(category)
                 .isThumbnail(isThumbnail)
                 .referenceId(referenceId)
@@ -91,7 +93,7 @@ public class ImageFileService {
                 .map(image -> ImageResponse.builder()
                         .id(image.getId())
                         .isThumbnail(image.isThumbnail())
-                        .url(image.getStoredPath())
+                        .url(image.getUrl())
                         .build())
                 .toList();
     }

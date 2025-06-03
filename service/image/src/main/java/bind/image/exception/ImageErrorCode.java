@@ -21,7 +21,8 @@ public enum ImageErrorCode implements ErrorCode {
     IMAGE_UPLOAD_FAILED(500, "Image upload failed", "IMAGE_UPLOAD_FAILED"),
     IMAGE_PROCESSING_FAILED(500, "Image processing failed", "IMAGE_PROCESSING_FAILED"),
     IMAGE_NOT_TEMP(404, "Image is not temporary", "IMAGE_NOT_TEMP"),
-    IMAGE_ALREADY_PENDING_DELETE(409, "Image is already pending deletion", "IMAGE_ALREADY_PENDING_DELETE"),;
+    IMAGE_ALREADY_PENDING_DELETE(409, "Image is already pending deletion", "IMAGE_ALREADY_PENDING_DELETE"),
+    IMAGE_PROCESSING_ERROR(500, "Image processing error", "IMAGE_PROCESSING_ERROR");
 
     private final int status;
     private final String message;

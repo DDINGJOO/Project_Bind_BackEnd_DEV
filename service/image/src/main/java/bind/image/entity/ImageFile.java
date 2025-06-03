@@ -31,7 +31,7 @@ public class ImageFile {
     private String storedPath;
 
     // 썸네일 경로 (선택)
-    private String thumbnailPath;
+    private String url;
 
     boolean isThumbnail;
 
