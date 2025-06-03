@@ -3,7 +3,6 @@ package bind.message.service;
 
 import bind.message.entity.UserProfileSnapshot;
 import bind.message.repository.UserProfileSnapshotRepository;
-import event.dto.ProfileUpdatedEventPayload;
 import event.dto.UserProfileCreatedEventPayload;
 import event.dto.UserProfileUpdatedEventPayload;
 import lombok.RequiredArgsConstructor;

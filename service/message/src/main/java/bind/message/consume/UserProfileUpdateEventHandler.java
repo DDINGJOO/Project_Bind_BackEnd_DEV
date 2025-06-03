@@ -4,7 +4,6 @@ package bind.message.consume;
 import bind.message.service.UserProfileSnapshotService;
 import event.constant.EventType;
 import event.domain.Event;
-import event.dto.ProfileUpdatedEventPayload;
 import event.dto.UserProfileUpdatedEventPayload;
 import event.handler.EventHandler;
 import lombok.RequiredArgsConstructor;
