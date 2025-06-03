@@ -24,7 +24,10 @@ public enum MessageErrorCode implements ErrorCode {
             403, "Receiver does not match", "MESSAGE_RECEIVER_NOT_MATCH"),
 
     MESSAGE_ALREADY_DELETED_BY_RECEIVER(
-            400, "Message already deleted by receiver", "MESSAGE_ALREADY_DELETED_BY_RECEIVER");
+            400, "Message already deleted by receiver", "MESSAGE_ALREADY_DELETED_BY_RECEIVER"),
+    MESSAGE_USER_NOT_MATCH(
+            403, "User does not match with message", "MESSAGE_USER_NOT_MATCH"
+    );
 
 
 

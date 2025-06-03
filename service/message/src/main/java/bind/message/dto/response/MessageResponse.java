@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Builder
 public record MessageResponse(
         @NotBlank
-        String SenderId,
+        String senderId,
 
         String senderNickName,
         String senderProfileImageUrl,
