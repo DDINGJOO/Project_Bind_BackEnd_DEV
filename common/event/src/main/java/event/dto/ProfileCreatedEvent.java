@@ -11,12 +11,15 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public class ProfileCreatedEvent extends BaseEvent {
     private String userId;
+    private String profileImageUrl;
+    private String nickname;
 
 
-
-    public ProfileCreatedEvent(String userId) {
+    public ProfileCreatedEvent(String userId,String profileImageUrl, String nickname) {
         super(EventType.USER_PROFILE_CREATED);
         this.userId = userId;
+        this.profileImageUrl = profileImageUrl;
+        this.nickname = nickname;
 
     }
 }

@@ -25,14 +25,14 @@ public class EventPubService {
      * 이메일 인증 이벤트를 카프카에 발행합니다.
      *
      */
-    public void kafkaUserProfileCreated(String userId)
-    {
-        log.info("called kafkaEmailVerification");
-
-
+    public void kafkaUserProfileCreated(String userId, String profileImageId, String nickname) {
+        log.info("called kafkaUserProfileCreated");
         eventProducer.publishEvent("user-profile-created-topic",
-                new ProfileCreatedEvent(userId)
+                new ProfileCreatedEvent(userId, profileImageId, nickname)
         );
     }
+
+
+
 
 }

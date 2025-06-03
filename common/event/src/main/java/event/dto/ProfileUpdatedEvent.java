@@ -11,13 +11,15 @@ import lombok.NoArgsConstructor;
 @EqualsAndHashCode(callSuper = true)
 public class ProfileUpdatedEvent extends BaseEvent {
     private String userId;
-    private Long imageId;
+    private String profileImageUrl;
+    private String nickname;
 
 
-    public ProfileUpdatedEvent(String userId,Long imageId) {
+    public ProfileUpdatedEvent(String userId,String profileImageUrl, String nickname) {
         super(EventType.USER_PROFILE_UPDATED);
         this.userId = userId;
-        this.imageId = imageId;
+        this.profileImageUrl = profileImageUrl;
+        this.nickname = nickname;
 
     }
 }
