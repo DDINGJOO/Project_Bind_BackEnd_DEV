@@ -4,7 +4,8 @@ import bind.message.entity.Message;
 import bind.message.entity.MessageBackup;
 import bind.message.repository.MessageBackupRepository;
 import bind.message.repository.MessageRepository;
-import bind.message.repository.UserTableRepository;
+import bind.message.repository.UserProfileSnapshotRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -19,12 +20,12 @@ public class MessageBackUpService {
 
     private final MessageRepository messageRepository;
     private final MessageBackupRepository messageBackupRepository;
-    private final UserTableRepository userTableRepository;
+    private final UserProfileSnapshotRepository userProfileSnapshotRepository;
 
 
     @Scheduled(cron = "0 0 3 * * *")
     @Transactional
-    public void archiveDeletedMessages() {
+    public void moveBackupDatabaseMessages() {
         // 양쪽 모두 삭제한 메시지 찾기
         List<Message> deletable = messageRepository
                 .findAllBySenderDeletedAtIsNotNullAndReceiverDeletedAtIsNotNull();
