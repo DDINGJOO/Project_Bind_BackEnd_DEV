@@ -7,6 +7,8 @@ import event.constant.EventType;
 import event.domain.Event;
 import event.domain.EventPayload;
 import event.dto.EmailVerificationEventPayload;
+import event.dto.UserProfileCreatedEventPayload;
+import event.dto.UserRegisteredEventPayload;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Deserializer;
 
@@ -24,7 +26,12 @@ public class GenericEventDeserializer implements Deserializer<Event<? extends Ev
 
     static {
         PAYLOAD_TYPE_MAP.put(EventType.EMAIL_VERIFICATION, EmailVerificationEventPayload.class);
-        PAYLOAD_TYPE_MAP.put(EventType.USER_PROFILE_CREATED, ProfileCreatedEventPayload.class);
+        PAYLOAD_TYPE_MAP.put(EventType.USER_PROFILE_CREATED, UserProfileCreatedEventPayload.class);
+        PAYLOAD_TYPE_MAP.put(EventType.USER_PROFILE_UPDATED, UserProfileCreatedEventPayload.class);
+        PAYLOAD_TYPE_MAP.put(EventType.USER_WITHDRAWN, UserProfileCreatedEventPayload.class);
+        PAYLOAD_TYPE_MAP.put(EventType.USER_REGISTERED, UserRegisteredEventPayload.class);
+
+        // 여기에 다른 이벤트 타입과 페이로드 클래스를 추가할 수 있다.
 
         // 추후 이벤트 추가시 여기에만 추가하면 된다
     }
