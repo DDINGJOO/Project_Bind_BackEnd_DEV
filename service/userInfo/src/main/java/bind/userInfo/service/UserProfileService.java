@@ -58,6 +58,8 @@ public class UserProfileService {
 
     // CRUD 예시(생성)
     public UserProfileSummaryResponse create(UserProfileCreateRequest req) {
+
+
         UserProfile profile = UserProfile.builder()
                 .userId(req.getUserId())
                 .nickname(req.getNickname())

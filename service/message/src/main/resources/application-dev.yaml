@@ -1,5 +1,5 @@
 server:
-  port: ${MESSAGE_SEVER_PORT}
+  port: ${MESSAGE_SERVER_PORT}
 
 spring:
   kafka:
@@ -31,4 +31,4 @@ spring:
 app:
   kafka:
     event-topics: user-profile-created-topic, user-profile-updated-topic
-    consumer-group: userInfo-service-group
+    consumer-group: message-service-group

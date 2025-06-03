@@ -19,6 +19,7 @@ public class UserProfileSnapshot {
 
     @Id
     String userId;
+
     String profileUrl;
     String nickName;
 }

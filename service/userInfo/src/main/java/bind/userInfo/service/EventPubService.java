@@ -31,8 +31,8 @@ public class EventPubService {
 
         UserProfileCreatedEventPayload payload = new UserProfileCreatedEventPayload(
                 userProfile.getUserId(),
-                userProfile.getNickname(),
-                userProfile.getProfileImageUrl()
+                userProfile.getProfileImageUrl(),
+                userProfile.getNickname()
         );
 
         Event<UserProfileCreatedEventPayload> event = new Event<>(
@@ -51,8 +51,8 @@ public class EventPubService {
 
         UserProfileCreatedEventPayload payload = new UserProfileCreatedEventPayload(
                 userProfile.getUserId(),
-                userProfile.getNickname(),
-                userProfile.getProfileImageUrl()
+                userProfile.getProfileImageUrl(),
+                userProfile.getNickname()
         );
 
         Event<UserProfileCreatedEventPayload> event = new Event<>(
