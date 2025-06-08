@@ -1,7 +1,6 @@
 package bind.userInfo.service;
 
 import bind.userInfo.dto.response.UserProfileSummaryResponse;
-
 import event.constant.EventType;
 import event.domain.Event;
 import event.dto.UserProfileCreatedEventPayload;
@@ -63,6 +62,8 @@ public class EventPubService {
 
         outboxService.saveEvent("user-profile-updated-topic", event);
     }
+
+
 
 
 

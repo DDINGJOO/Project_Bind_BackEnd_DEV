@@ -65,6 +65,10 @@ public class UserProfileService {
     // --- 프로필 생성 ---
     @Transactional
     public UserProfileSummaryResponse create(UserProfileCreateRequest req) {
+        // 닉네임 중복 검사
+        if (userProfileRepository.findByNickname(req.getNickname()).isPresent()) {
+            throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
         LocalDateTime now = LocalDateTime.now();
 
         UserProfile profile = UserProfile.builder()
@@ -89,6 +93,11 @@ public class UserProfileService {
     // --- 프로필 업데이트 ---
     @Transactional
     public UserProfileSummaryResponse updateProfile(String userId, UserProfileUpdateRequest req) {
+
+        if (req.getNickname() != null && userProfileRepository.findByNickname(req.getNickname()).isPresent()) {
+            throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
+
         UserProfile profile = getProfileOrThrow(userId);
         patchProfile(profile, req);
         userProfileRepository.save(profile);

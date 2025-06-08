@@ -17,6 +17,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import util.nicknamefilter.NicknameFilterService;
 
 import java.util.List;
 
@@ -27,6 +28,9 @@ public class UserProfileController {
 
     private final UserProfileService userProfileService;
     private final EventPubService eventPubService;
+    private final NicknameFilterService nicknameFilterService;
+
+
 
     // 1. 단건 조회 (흥미/관심 목록 포함)
     @GetMapping("/{userId}")
@@ -59,6 +63,16 @@ public class UserProfileController {
             @RequestBody UserProfileCreateRequest request
     ) {
         UserProfileSummaryResponse response;
+
+        try{
+            // 닉네임 필터링
+            nicknameFilterService.validateNickname(request.getNickname());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
+
+        }
+
+
         try{
             response = userProfileService.create(request);
         }catch (ProfileException e){
@@ -85,6 +99,13 @@ public class UserProfileController {
             @PathVariable String userId,
             @RequestBody UserProfileUpdateRequest request
     ) {
+
+        // 닉네임 필터링
+        try {
+            nicknameFilterService.validateNickname(request.getNickname());
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
+        }
         var response  = userProfileService.updateProfile(userId, request);
 
         try {

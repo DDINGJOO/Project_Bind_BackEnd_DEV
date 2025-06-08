@@ -21,7 +21,8 @@ import security.jwt.JwtProperties;
         "logging",
         "event",                // 이벤트 모듈
         "data",                 // 공통 데이터 모듈\
-        "outbox"                // Outbox 모듈
+        "outbox",                // Outbox 모듈
+        "util"
 })
 @EnableJpaRepositories(basePackages = {
         "bind.userInfo.repository",   // 이미지 도메인 JPA 레포지토리
