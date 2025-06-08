@@ -3,9 +3,9 @@ package bind.mail.service;
 
 
 
-import event.dto.EmailVerificationEvent;
-import event.dto.UserRegisteredEvent;
-import event.dto.UserWithdrawEvent;
+
+import event.dto.EmailVerificationEventPayload;
+import event.dto.UserWithdrawEventPayload;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +20,7 @@ public class MailService {
 
     private final JavaMailSender mailSender;
 
-    public void sendVerificationEmail(EmailVerificationEvent payload) {
+    public void sendVerificationEmail(EmailVerificationEventPayload payload) {
 
         //TODO : MAIL PATH  CHECK
         System.out.println("This is MailService.sendVerificationEmail() \n email : " + payload.getEmail() + "\n token :" + payload.getToken());
@@ -45,7 +45,7 @@ public class MailService {
 
 
 
-    public void sendGoodByeMail(UserWithdrawEvent event)
+    public void sendGoodByeMail(UserWithdrawEventPayload event)
     {
         //TODO : REMOVE THIS LINE
         System.out.println("This is MailService.sendGoodByeMail() \n email : " + event.getEmail());

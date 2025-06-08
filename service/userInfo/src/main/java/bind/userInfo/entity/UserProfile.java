@@ -23,7 +23,7 @@ public class UserProfile {
     private String nickname;
 
     @Column(name = "profile_image_id", length = 100)
-    private String profileImageId; // image-service 연동
+    private String profileImageUrl; // image-service 연동
 
     @Column(length = 200)
     private String introduction;
@@ -54,4 +54,10 @@ public class UserProfile {
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
     private List<UserInterest> userInterests;
+
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userId")
+    private List<UserGenre> userGenres;
+
+
+
 }

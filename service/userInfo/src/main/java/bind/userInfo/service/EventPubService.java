@@ -1,14 +1,14 @@
 package bind.userInfo.service;
 
-import bind.userInfo.entity.UserProfile;
-import event.dto.EmailVerificationEvent;
-import event.dto.ProfileCreatedEvent;
-import event.dto.UserRegisteredEvent;
-import event.dto.UserWithdrawEvent;
-import event.producer.EventProducer;
+import bind.userInfo.dto.response.UserProfileSummaryResponse;
+
+import event.constant.EventType;
+import event.domain.Event;
+import event.dto.UserProfileCreatedEventPayload;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import outbox.OutboxPublisher;
 import security.jwt.JwtProvider;
 
 @Service
@@ -18,21 +18,52 @@ import security.jwt.JwtProvider;
 public class EventPubService {
 
     private  final JwtProvider tokenProvider;
-    private final EventProducer eventProducer;
+    private final OutboxPublisher outboxService;
     private final UserProfileService userProfileService;
 
     /**
      * 이메일 인증 이벤트를 카프카에 발행합니다.
      *
      */
-    public void kafkaUserProfileCreated(String userId)
-    {
-        log.info("called kafkaEmailVerification");
+    public void userProfileCreatedEventPub(UserProfileSummaryResponse userProfile) {
+        log.info("called userProfileCreatedEventPub");
 
 
-        eventProducer.publishEvent("user-profile-created-topic",
-                new ProfileCreatedEvent(userId)
+        UserProfileCreatedEventPayload payload = new UserProfileCreatedEventPayload(
+                userProfile.getUserId(),
+                userProfile.getProfileImageUrl(),
+                userProfile.getNickname()
         );
+
+        Event<UserProfileCreatedEventPayload> event = new Event<>(
+                EventType.USER_PROFILE_CREATED,
+                System.currentTimeMillis(),
+                payload
+        );
+
+        outboxService.saveEvent("user-profile-created-topic", event);
     }
+
+
+    public void userProfileUpdatedEventPub(UserProfileSummaryResponse userProfile) {
+        log.info("called userProfileUpdatedEventPub");
+
+
+        UserProfileCreatedEventPayload payload = new UserProfileCreatedEventPayload(
+                userProfile.getUserId(),
+                userProfile.getProfileImageUrl(),
+                userProfile.getNickname()
+        );
+
+        Event<UserProfileCreatedEventPayload> event = new Event<>(
+                EventType.USER_PROFILE_UPDATED,
+                System.currentTimeMillis(),
+                payload
+        );
+
+        outboxService.saveEvent("user-profile-updated-topic", event);
+    }
+
+
 
 }

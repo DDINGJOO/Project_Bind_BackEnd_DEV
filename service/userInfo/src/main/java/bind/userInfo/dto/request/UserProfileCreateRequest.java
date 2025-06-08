@@ -1,5 +1,6 @@
 package bind.userInfo.dto.request;
 
+import data.enums.Genre;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import lombok.Data;
@@ -14,11 +15,12 @@ import java.util.List;
 public class UserProfileCreateRequest {
     private String userId;
     private String nickname;
-    private String profileImageId;
+    private String profileImageUrl;
     private String introduction;
     private Location location;
     private String gender;
     private String birthdate; // yyyy-MM-dd (프론트에서 String으로 전달, 서버에서 LocalDate로 파싱)
     private Boolean profilePublic;
     private List<Instrument> instruments; // 관심사(태그/쉼표 구분), 별도 테이블 분리도 가능
+    private List<Genre> genres; // 장르 목록 (예: "ROCK", "POP" 등, 별도 테이블 분리도 가능)
 }

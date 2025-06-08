@@ -6,67 +6,70 @@ import bind.image.entity.ImageFile;
 import bind.image.exception.ImageErrorCode;
 import bind.image.exception.ImageException;
 import bind.image.repository.ImageFileRepository;
+import bind.image.util.ImageUtil;
 import data.enums.ResourceCategory;
 import data.enums.image.ImageStatus;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 import static java.util.Locale.filter;
 
+
 @Service
 @RequiredArgsConstructor
 public class ImageFileService {
-    private final ImageFileRepository imageFileRepository;
 
+    private static final int THUMBNAIL_SIZE = 256;
+
+    private final ImageFileRepository imageFileRepository;
     private final LocalImageStorage imageStorage;
 
-
+    @Value("${image.upload.nginx.url}")
+    private String publicUrlPrefix;
 
     public ImageUploadResponse upload(MultipartFile file,
                                       ResourceCategory category,
                                       String referenceId,
                                       String uploaderId,
                                       ImageVisibility visibility,
-                                      Boolean isThumbnail
-    ) {
+                                      Boolean isThumbnail) {
         String uuid = UUID.randomUUID().toString();
-        String extension = file.getOriginalFilename().substring(file.getOriginalFilename().lastIndexOf("."));
-
-        String fileName = uuid + extension;
+        String webpFileName = uuid + ".webp";
         String datePath = LocalDateTime.now().toLocalDate().toString().replace("-", "/");
-        String storedPath = "/upload/images/" + category.name() + "/" + datePath + "/" + fileName;
+        String storedPath = "/" + category.name() + "/" + datePath + "/" + webpFileName;
 
-        imageStorage.store(file, storedPath);
+        // 1. 이미지 변환 및 저장
+        try {
+            byte[] webpBytes = Boolean.TRUE.equals(isThumbnail)
+                    ? ImageUtil.toWebpThumbnail(file, THUMBNAIL_SIZE, THUMBNAIL_SIZE, 0.8f)
+                    : ImageUtil.toWebp(file, 0.8f);
+            imageStorage.store(webpBytes, storedPath);
+        } catch (Exception e) {
+            throw new ImageException(ImageErrorCode.IMAGE_PROCESSING_ERROR);
+        }
 
-
-
-        //TODO : 실제 NSFW 감지 로직 구현 후 제거
-        boolean isSafe = true;
-
-
-        ImageStatus status = isSafe ? ImageStatus.TEMP  : ImageStatus.REJECTED;
-
-
+        // 2. DB 저장 (상대경로만 저장, 공개 URL은 필요시 동적으로 생성)
         ImageFile imageFile = ImageFile.builder()
-                .uuidName(fileName)
+                .uuidName(webpFileName)
                 .originalName(file.getOriginalFilename())
                 .storedPath(storedPath)
-                .thumbnailPath(null) // 썸네일 생성 미적용 상태
-                .contentType(file.getContentType())
+                .contentType("image/webp")
                 .fileSize(file.getSize())
                 .category(category)
                 .isThumbnail(isThumbnail)
                 .referenceId(referenceId)
                 .uploaderId(uploaderId)
-                .status(status)
+                .status(ImageStatus.TEMP)
                 .visibility(visibility)
                 .createdAt(LocalDateTime.now())
                 .build();
@@ -75,78 +78,93 @@ public class ImageFileService {
 
         return ImageUploadResponse.builder()
                 .id(imageFile.getId())
-                .url(storedPath)
+                .url(publicUrlPrefix + storedPath)
                 .build();
     }
 
-    public List<ImageResponse> getImageUrls(ResourceCategory category, String referenceId) {
-        List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(
-                category, referenceId);
+    public List<ImageUploadResponse> uploadImages(List<MultipartFile> files,
+                                                  ResourceCategory category,
+                                                  String referenceId,
+                                                  String uploaderId,
+                                                  ImageVisibility visibility) {
+        List<ImageUploadResponse> responses = new ArrayList<>();
+        for (MultipartFile file : files) {
+            responses.add(upload(file, category, referenceId, uploaderId, visibility, false));
+        }
+        return responses;
+    }
 
+    /**
+     * CONFIRMED 상태의 이미지만 반환. 공개 URL로 응답.
+     */
+    public List<ImageResponse> getImageUrls(ResourceCategory category, String referenceId) {
+        List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category, referenceId);
         if (images.isEmpty()) {
             throw new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
         }
         return images.stream()
-                .filter(image -> image.getStatus() == ImageStatus.CONFIRMED )
+                .filter(image -> image.getStatus() == ImageStatus.CONFIRMED)
                 .map(image -> ImageResponse.builder()
                         .id(image.getId())
                         .isThumbnail(image.isThumbnail())
-                        .url(image.getStoredPath())
+                        .url(publicUrlPrefix + image.getStoredPath())
                         .build())
                 .toList();
     }
 
     public void confirmImage(Long imageId) {
-        ImageFile image = imageFileRepository.findById(imageId)
-                .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND));
-
-        if (image.getStatus() != ImageStatus.TEMP) {
-            throw new ImageException(ImageErrorCode.IMAGE_NOT_TEMP);
-        }
-        image.confirm();
-        imageFileRepository.save(image);
+        changeImageStatus(imageId, ImageStatus.TEMP, ImageStatus.CONFIRMED, ImageErrorCode.IMAGE_NOT_TEMP);
     }
-
-
 
     public void deleteImage(Long imageId) {
+        changeImageStatus(imageId, null, ImageStatus.PENDING_DELETE, ImageErrorCode.IMAGE_ALREADY_PENDING_DELETE);
+    }
+
+    private void changeImageStatus(Long imageId, ImageStatus mustBeStatus, ImageStatus toStatus, ImageErrorCode notMatchError) {
         ImageFile image = imageFileRepository.findById(imageId)
                 .orElseThrow(() -> new ImageException(ImageErrorCode.IMAGE_NOT_FOUND));
 
-        if (image.getStatus() == ImageStatus.PENDING_DELETE) {
-            throw new ImageException(ImageErrorCode.IMAGE_ALREADY_PENDING_DELETE);
+        if (mustBeStatus != null && image.getStatus() != mustBeStatus) {
+            throw new ImageException(notMatchError);
         }
-        image.markPendingDelete();
+        if (toStatus == ImageStatus.PENDING_DELETE && image.getStatus() == ImageStatus.PENDING_DELETE) {
+            throw new ImageException(notMatchError);
+        }
+        image.setStatus(toStatus);
         imageFileRepository.save(image);
     }
 
-
-    public void markAsConfirmed(ResourceCategory category , String referenceId) {
-        List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category,referenceId);
-
-        images.forEach(ImageFile::confirm);
+    public void markAsConfirmed(ResourceCategory category, String referenceId) {
+        changeStatusForImages(category, referenceId, ImageStatus.CONFIRMED);
     }
 
-    public void markAsPendingDelete(ResourceCategory category , String referenceId) {
+    public void markAsPendingDelete(ResourceCategory category, String referenceId) {
         List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category, referenceId);
         if (images.isEmpty()) {
             throw new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
         }
-        images.forEach(ImageFile::markPendingDelete);
+        images.forEach(img -> img.setStatus(ImageStatus.PENDING_DELETE));
+        imageFileRepository.saveAll(images);
     }
 
+    private void changeStatusForImages(ResourceCategory category, String referenceId, ImageStatus newStatus) {
+        List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category, referenceId);
+        images.forEach(img -> img.setStatus(newStatus));
+        imageFileRepository.saveAll(images);
+    }
 
+    /**
+     * TEMP 1시간 초과, PENDING_DELETE 1시간 초과, REJECTED 모두 삭제
+     */
     @Scheduled(cron = "0 0 * * * *")
     public void deleteExpiredImages() {
         LocalDateTime cutoff = LocalDateTime.now().minusHours(1);
         List<ImageFile> expired = imageFileRepository.findByStatusAndCreatedAtBefore(ImageStatus.TEMP, cutoff);
         expired.addAll(imageFileRepository.findByStatusAndPendingDeleteAtBefore(ImageStatus.PENDING_DELETE, cutoff));
-        expired.add(imageFileRepository.findByStatus(ImageStatus.REJECTED));
+        expired.addAll(imageFileRepository.findByStatus(ImageStatus.REJECTED));
         for (ImageFile image : expired) {
-
             imageStorage.delete(image.getStoredPath());
             imageFileRepository.delete(image);
         }
     }
-
 }

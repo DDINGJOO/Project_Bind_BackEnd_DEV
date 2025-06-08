@@ -8,6 +8,7 @@ import bind.userInfo.exception.ProfileException;
 import bind.userInfo.service.EventPubService;
 import bind.userInfo.service.UserProfileService;
 import data.BaseResponse;
+import data.enums.Genre;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import util.nicknamefilter.NicknameFilterService;
 
 import java.util.List;
 
@@ -27,25 +27,30 @@ public class UserProfileController {
 
     private final UserProfileService userProfileService;
     private final EventPubService eventPubService;
-    private final NicknameFilterService nicknameFilterService;
 
     // 1. 단건 조회 (흥미/관심 목록 포함)
     @GetMapping("/{userId}")
     public ResponseEntity<BaseResponse<UserProfileSummaryResponse>> getProfile(@PathVariable String userId) {
-        return ResponseEntity.ok(BaseResponse.success(userProfileService.getProfile(userId)));
+        return ResponseEntity.ok(
+                BaseResponse.success(userProfileService.getProfile(userId))
+        );
     }
 
     // 2. 페이징 검색 (닉네임/지역/관심 N개 필터링, 흥미 목록 포함)
     @GetMapping
-    public ResponseEntity<Page<UserProfileSummaryResponse>> searchProfiles(
+    public ResponseEntity<Page<BaseResponse<UserProfileSummaryResponse>>> searchProfiles(
             @RequestParam(required = false) String nickname,
             @RequestParam(required = false) Location location,
             @RequestParam(required = false) List<Instrument> interests, // /?interests=DRUM&interests=VOCAL
+            @RequestParam(required = false) List<Genre> genres, // /?genres=ROCK&genres=POP
             @PageableDefault(size = 20) Pageable pageable
     ) {
-        return ResponseEntity.ok(
-                userProfileService.searchProfiles(nickname, location, interests, pageable)
+        Page<UserProfileSummaryResponse> profiles = userProfileService.searchProfiles(
+                nickname, location, interests, genres,pageable
         );
+
+        Page<BaseResponse<UserProfileSummaryResponse>> responsePage = profiles.map(BaseResponse::success);
+        return ResponseEntity.ok(responsePage);
     }
 
     // 3. 생성
@@ -54,14 +59,6 @@ public class UserProfileController {
             @RequestBody UserProfileCreateRequest request
     ) {
         UserProfileSummaryResponse response;
-
-        try{
-            nicknameFilterService.validateNickname(request.getNickname());
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(BaseResponse.error(e.getMessage()));
-        }
-
-
         try{
             response = userProfileService.create(request);
         }catch (ProfileException e){
@@ -71,7 +68,9 @@ public class UserProfileController {
         }
 
         try{
-            eventPubService.kafkaUserProfileCreated(response.getUserId());
+            eventPubService.userProfileCreatedEventPub(
+                    response
+            );
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(BaseResponse.error("카프카 메세지 발행 중 오류가 발생했습니다."));
         }
@@ -86,20 +85,19 @@ public class UserProfileController {
             @PathVariable String userId,
             @RequestBody UserProfileUpdateRequest request
     ) {
+        var response  = userProfileService.updateProfile(userId, request);
 
-        if(request.getNickname() != null) {
-            try {
-                nicknameFilterService.validateNickname(request.getNickname());
-            } catch (Exception e) {
-                return ResponseEntity.internalServerError().body(BaseResponse.error(e.getMessage()));
-            }
+        try {
+            eventPubService.userProfileUpdatedEventPub(response);
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.error("카프카 메세지 발행 중 오류가 발생했습니다."));
         }
-        return ResponseEntity.ok(BaseResponse.success(userProfileService.updateProfile(userId, request)));
+        return ResponseEntity.ok(BaseResponse.success(response));
     }
 
     // 5. 삭제
     @DeleteMapping("/{userId}")
-    public ResponseEntity<BaseResponse<Void>> deleteProfile(@PathVariable String userId) {
+    public ResponseEntity<Void> deleteProfile(@PathVariable String userId) {
         userProfileService.deleteProfile(userId);
         return ResponseEntity.noContent().build();
     }

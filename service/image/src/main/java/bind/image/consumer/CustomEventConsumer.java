@@ -1,22 +1,25 @@
 package bind.image.consumer;
 
-import event.domain.BaseEvent;
+import event.domain.Event;
+import event.domain.EventPayload;
 import event.handler.EventHandlerFactory;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class CustomEventConsumer {
 
     private final EventHandlerFactory eventHandlerFactory;
 
-    // 여러 토픽을 한 번에 주입받습니다.
     @KafkaListener(topics = "#{'${app.kafka.event-topics}'.split(',')}", groupId = "${app.kafka.consumer-group}")
-    public void consume(ConsumerRecord<String, Object> record) {
-        BaseEvent event = (BaseEvent) record.value();
+    public void consume(ConsumerRecord<String, Event<? extends EventPayload>> record) {
+        Event<? extends EventPayload> event = record.value();
+        log.info("이벤트 수신: {}", event);
         eventHandlerFactory.handleEvent(event);
     }
 }

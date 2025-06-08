@@ -1,9 +1,10 @@
 package event.handler;
 
 import event.constant.EventType;
-import event.domain.BaseEvent;
+import event.domain.Event;
+import event.domain.EventPayload;
 
-public interface EventHandler<T extends BaseEvent> {
+public interface EventHandler<T extends EventPayload> {
     EventType supportedType();
-    void handle(T event);
+    void handle(Event<T> event);
 }

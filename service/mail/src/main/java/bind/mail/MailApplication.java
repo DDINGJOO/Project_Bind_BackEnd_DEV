@@ -17,7 +17,9 @@ import org.springframework.kafka.annotation.EnableKafka;
         "event",                 // 공통 event 모듈
         "logging",              // 공통 logging 모듈
 })
+
 @EnableKafka
+
 public class MailApplication {
     public static void main(String[] args) {
         Dotenv dotenv = Dotenv.configure()

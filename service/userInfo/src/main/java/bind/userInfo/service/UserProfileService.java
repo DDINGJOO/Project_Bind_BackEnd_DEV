@@ -4,23 +4,26 @@ package bind.userInfo.service;
 import bind.userInfo.dto.request.UserProfileCreateRequest;
 import bind.userInfo.dto.request.UserProfileUpdateRequest;
 import bind.userInfo.dto.response.UserProfileSummaryResponse;
+import bind.userInfo.entity.UserGenre;
 import bind.userInfo.entity.UserInterest;
 import bind.userInfo.entity.UserProfile;
 import bind.userInfo.exception.ProfileErrorCode;
 import bind.userInfo.exception.ProfileException;
+import bind.userInfo.repository.UserGenreRepository;
 import bind.userInfo.repository.UserInterestRepository;
 import bind.userInfo.repository.UserProfileRepository;
-import bind.userInfo.repository.UserProfileSpecs;
+import data.enums.Genre;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -30,139 +33,147 @@ public class UserProfileService {
 
     private final UserProfileRepository userProfileRepository;
     private final UserInterestRepository userInterestRepository;
+    private final UserGenreRepository userGenreRepository;
 
-    // 유저 단건 조회 (흥미목록까지 포함)
+    // --- 단건 조회 ---
+    @Transactional(readOnly = true)
     public UserProfileSummaryResponse getProfile(String userId) {
-        UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
+        UserProfile profile = getProfileOrThrow(userId);
         List<UserInterest> interests = userInterestRepository.findByUserId(userId);
-        return toResponse(profile, interests);
+        List<UserGenre> genres = userGenreRepository.findByUserId(userId);
+        return UserProfileConverter.toResponse(profile, interests, genres);
     }
 
-    // 전체 유저 프로필 페이징 + 닉네임, 지역, 관심사(악기) 필터 조합
+    // --- 필터+페이징 검색 ---
+    @Transactional(readOnly = true)
     public Page<UserProfileSummaryResponse> searchProfiles(
-            String nickname, Location location, List<Instrument> interests, Pageable pageable) {
-        Specification<UserProfile> spec = UserProfileSpecs.withFilters(nickname, location, interests);
-        Page<UserProfile> profiles = userProfileRepository.findAll(spec, pageable);
+            String nickname, Location location, List<Instrument> interests, List<Genre> genres, Pageable pageable) {
 
-        // 흥미목록 같이 넘기기
-        List<String> userIds = profiles.getContent().stream()
-                .map(UserProfile::getUserId).collect(Collectors.toList());
-        List<UserInterest> allInterests = userInterestRepository.findByUserIdIn(userIds);
+        Page<UserProfile> profiles = userProfileRepository.searchProfiles(
+                nickname, location, interests, interests == null || interests.isEmpty(),
+                genres == null || genres.isEmpty(), genres, pageable);
 
-        // userId → 관심사 맵
-        var interestMap = allInterests.stream().collect(Collectors.groupingBy(UserInterest::getUserId));
-
-        Page<UserProfileSummaryResponse> result = profiles.map(p -> {
-            List<UserInterest> iList = interestMap.getOrDefault(p.getUserId(), List.of());
-            return toResponse(p, iList);
+        return profiles.map(profile -> {
+            // Interests는 fetch join된 경우가 아니면 직접 조회
+            List<UserInterest> interestList = Optional.ofNullable(profile.getUserInterests())
+                    .orElseGet(() -> userInterestRepository.findByUserId(profile.getUserId()));
+            List<UserGenre> genreList = userGenreRepository.findByUserId(profile.getUserId());
+            return UserProfileConverter.toResponse(profile, interestList, genreList);
         });
-        return result;
     }
 
-    // CRUD 예시(생성)
+    // --- 프로필 생성 ---
+    @Transactional
     public UserProfileSummaryResponse create(UserProfileCreateRequest req) {
-        // 1. 필수 필드 체크
-        if (req.getUserId() == null || req.getNickname() == null) {
-            throw new ProfileException(ProfileErrorCode.INVALID_PROFILE_DATA);
-        }
-        // 2. 중복 닉네임 체크 (닉네임 필터링 서비스 사용)
-        if (userProfileRepository.existsByNickname(req.getNickname())) {
-            throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
-        }
+        LocalDateTime now = LocalDateTime.now();
 
         UserProfile profile = UserProfile.builder()
                 .userId(req.getUserId())
                 .nickname(req.getNickname())
-                .profileImageId(req.getProfileImageId())
+                .profileImageUrl(req.getProfileImageUrl())
                 .introduction(req.getIntroduction())
                 .location(req.getLocation())
                 .profilePublic(req.getProfilePublic())
-                .createdAt(java.time.LocalDateTime.now())
-                .updatedAt(java.time.LocalDateTime.now())
+                .createdAt(now)
+                .updatedAt(now)
                 .build();
         userProfileRepository.save(profile);
 
-        // 흥미(관심사)도 별도 저장
-        if (req.getInstruments() != null) {
-            for (Instrument inst : req.getInstruments()) {
-                userInterestRepository.save(UserInterest.builder()
-                        .userId(profile.getUserId())
-                        .interest(inst)
-                        .createdAt(java.time.LocalDateTime.now())
-                        .build());
-            }
-        }
+        // 연관 테이블 일괄 저장
+        saveUserInterests(req.getInstruments(), profile.getUserId(), now);
+        saveUserGenres(req.getGenres(), profile.getUserId(), now);
 
-        List<UserInterest> interests = userInterestRepository.findByUserId(profile.getUserId());
-        return toResponse(profile, interests);
+        return getProfile(profile.getUserId());
     }
 
-    // 프로필 + 흥미목록 응답 변환
-    private UserProfileSummaryResponse toResponse(UserProfile p, List<UserInterest> interests) {
-        UserProfileSummaryResponse dto = new UserProfileSummaryResponse();
-        dto.setUserId(p.getUserId());
-        dto.setNickname(p.getNickname());
-        dto.setProfileImageId(p.getProfileImageId());
-        dto.setIntroduction(p.getIntroduction());
-        dto.setLocation(p.getLocation());
-        dto.setProfilePublic(p.getProfilePublic());
-        dto.setInterests(interests.stream().map(UserInterest::getInterest).collect(Collectors.toList()));
-        return dto;
-    }
-
-    public void deleteProfile(String userId) {
-        // 1. 프로필 엔티티 가져오기
-        UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
-
-        // 2. 프로필 삭제
-        userProfileRepository.delete(profile);
-
-        // 3. 해당 유저의 관심사(흥미) 모두 삭제
-        userInterestRepository.deleteAllByUserId(userId);
-    }
-
-
-
-
-
+    // --- 프로필 업데이트 ---
     @Transactional
     public UserProfileSummaryResponse updateProfile(String userId, UserProfileUpdateRequest req) {
-        // 1. 프로필 엔티티 가져오기
-        UserProfile profile = userProfileRepository.findById(userId)
-                .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
-
-        // 2. 변경 필드 반영
-        if (req.getNickname() != null) {
-            // 닉네임 변경 시 중복 체크
-            if (userProfileRepository.existsByNickname(req.getNickname())) {
-                throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
-            }
-            profile.setNickname(req.getNickname());
-        };
-        if (req.getProfileImageId() != null) profile.setProfileImageId(req.getProfileImageId());
-        if (req.getIntroduction() != null) profile.setIntroduction(req.getIntroduction());
-        if (req.getLocation() != null) profile.setLocation(req.getLocation());
-        if (req.getProfilePublic() != null) profile.setProfilePublic(req.getProfilePublic());
-        profile.setUpdatedAt(java.time.LocalDateTime.now());
-
+        UserProfile profile = getProfileOrThrow(userId);
+        patchProfile(profile, req);
         userProfileRepository.save(profile);
 
-        // 3. 관심사(흥미) 갱신: 모두 삭제 후 새로 저장
+        // 흥미(관심사) 일괄 갱신
         if (req.getInterests() != null) {
-            userInterestRepository.deleteAll(userInterestRepository.findByUserId(userId));
-            for (Instrument inst : req.getInterests()) {
-                userInterestRepository.save(UserInterest.builder()
-                        .userId(userId)
-                        .interest(inst)
-                        .createdAt(java.time.LocalDateTime.now())
-                        .build());
-            }
+            userInterestRepository.deleteAllByUserId(userId);
+            saveUserInterests(req.getInterests(), userId, LocalDateTime.now());
         }
+        // 장르 일괄 갱신
+        if (req.getGenres() != null) {
+            userGenreRepository.deleteAllByUserId(userId);
+            saveUserGenres(req.getGenres(), userId, LocalDateTime.now());
+        }
+        return getProfile(userId);
+    }
 
-        // 4. 응답 변환
-        List<UserInterest> interests = userInterestRepository.findByUserId(userId);
-        return toResponse(profile, interests);
+    // --- 프로필 삭제 ---
+    @Transactional
+    public void deleteProfile(String userId) {
+        UserProfile profile = getProfileOrThrow(userId);
+        userProfileRepository.delete(profile);
+        userInterestRepository.deleteAllByUserId(userId);
+        userGenreRepository.deleteAllByUserId(userId);
+    }
+
+    // ==============================
+    // --- Private Helper Methods ---
+    // ==============================
+
+    private UserProfile getProfileOrThrow(String userId) {
+        return userProfileRepository.findById(userId)
+                .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
+    }
+
+    private void patchProfile(UserProfile profile, UserProfileUpdateRequest req) {
+        Optional.ofNullable(req.getNickname()).ifPresent(profile::setNickname);
+        Optional.ofNullable(req.getProfileImageUrl()).ifPresent(profile::setProfileImageUrl);
+        Optional.ofNullable(req.getIntroduction()).ifPresent(profile::setIntroduction);
+        Optional.ofNullable(req.getLocation()).ifPresent(profile::setLocation);
+        Optional.ofNullable(req.getProfilePublic()).ifPresent(profile::setProfilePublic);
+        profile.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private void saveUserInterests(List<Instrument> interests, String userId, LocalDateTime now) {
+        if (interests == null) return;
+        userInterestRepository.saveAll(
+                interests.stream()
+                        .map(inst -> UserInterest.builder()
+                                .userId(userId)
+                                .interest(inst)
+                                .createdAt(now)
+                                .build())
+                        .collect(Collectors.toList())
+        );
+    }
+
+    private void saveUserGenres(List<Genre> genres, String userId, LocalDateTime now) {
+        if (genres == null) return;
+        userGenreRepository.saveAll(
+                genres.stream()
+                        .map(genre -> UserGenre.builder()
+                                .userId(userId)
+                                .genre(genre)
+                                .createdAt(now)
+                                .build())
+                        .collect(Collectors.toList())
+        );
+    }
+
+    // --- DTO 변환 모듈 ---
+    private static class UserProfileConverter {
+        static UserProfileSummaryResponse toResponse(UserProfile p, List<UserInterest> interests, List<UserGenre> genres) {
+            UserProfileSummaryResponse dto = new UserProfileSummaryResponse();
+            dto.setUserId(p.getUserId());
+            dto.setNickname(p.getNickname());
+            dto.setProfileImageUrl(p.getProfileImageUrl());
+            dto.setIntroduction(p.getIntroduction());
+            dto.setLocation(p.getLocation());
+            dto.setProfilePublic(p.getProfilePublic());
+            dto.setInterests(interests == null ? List.of() :
+                    interests.stream().map(UserInterest::getInterest).collect(Collectors.toList()));
+            dto.setGenres(genres == null ? List.of() :
+                    genres.stream().map(UserGenre::getGenre).collect(Collectors.toList()));
+            return dto;
+        }
     }
 }

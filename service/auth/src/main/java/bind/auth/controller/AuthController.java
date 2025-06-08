@@ -49,7 +49,7 @@ public class AuthController {
             return ResponseEntity.internalServerError().body(BaseResponse.error("AuthService를 수행하는중 발생했습니다."));
         }
         try{
-            eventPubService.kafkaEmailVerification(user);
+            eventPubService.emailVerification(user);
         } catch (AuthException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
         } catch (Exception e) {
@@ -176,7 +176,7 @@ public class AuthController {
         log.info("Call Confirm Email with token: {}", token);
         try {
             var user = authService.confirmEmail(token);
-            eventPubService.kafkaUserRegistered(user);
+            eventPubService.userRegistered(user);
 
 
             return ResponseEntity.ok(BaseResponse.success());

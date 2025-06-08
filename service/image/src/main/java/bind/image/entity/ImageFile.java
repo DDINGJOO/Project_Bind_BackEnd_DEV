@@ -9,7 +9,14 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "image_files")
+@Table(name = "image_files",
+        indexes = {
+                @Index(name = "idx_image_file_category", columnList = "category"),
+                @Index(name = "idx_image_file_reference_id", columnList = "referenceId"),
+                @Index(name = "idx_image_file_category_and_referenceId", columnList = "category, referenceId"),
+                @Index(name = "idx_image_file_status", columnList = "status"),
+        }
+)
 @Getter
 @Builder
 @Setter
@@ -31,7 +38,7 @@ public class ImageFile {
     private String storedPath;
 
     // 썸네일 경로 (선택)
-    private String thumbnailPath;
+    private String url;
 
     boolean isThumbnail;
 

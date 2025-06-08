@@ -5,12 +5,12 @@ dependencies {
     implementation project(':common:data')
     implementation project(':common:logging')
     implementation project(":common:event")
-
+    implementation project(":common:outbox")
 
     // Spring Boot Starter for Mail
     implementation 'org.springframework.boot:spring-boot-starter-mail'
     implementation 'org.springframework.boot:spring-boot-starter-web'
-
+    implementation 'com.mysql:mysql-connector-j'
 
     implementation "org.springframework.boot:spring-boot-starter-thymeleaf"
 
