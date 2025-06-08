@@ -13,7 +13,7 @@ import bind.auth.repository.UserRoleRepository;
 import data.enums.auth.UserRoleType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import util.PkProvider;
+import util.pkProvider.PkProvider;
 
 import java.time.LocalDateTime;
 
