@@ -30,6 +30,23 @@ public class NicknameFilterService {
         if (containsBadWord(nickname)) {
             throw new IllegalArgumentException("부적절한 닉네임(금지어 포함)");
         }
-        // TODO: 길이, 패턴, 한글/영문 제한 등 추가 검증도 여기에
+        if (nickname.length() < 2 || nickname.length() > 20) {
+            throw new IllegalArgumentException("닉네임은 2자 이상 20자 이하로 입력해주세요.");
+        }
+        if (!nickname.matches("^[a-zA-Z0-9가-힣_]+$")) {
+            throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자, 밑줄(_)만 사용할 수 있습니다.");
+        }
+        if (nickname.startsWith("_") || nickname.endsWith("_")) {
+            throw new IllegalArgumentException("닉네임은 밑줄(_)로 시작하거나 끝날 수 없습니다.");
+        }
+        if (nickname.contains("__")) {
+            throw new IllegalArgumentException("닉네임에 연속된 밑줄(__)은 사용할 수 없습니다.");
+        }
+        if (nickname.chars().anyMatch(Character::isWhitespace)) {
+            throw new IllegalArgumentException("닉네임에 공백을 포함할 수 없습니다.");
+        }
+
+
+
     }
 }

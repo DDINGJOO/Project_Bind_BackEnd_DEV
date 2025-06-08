@@ -18,6 +18,7 @@ import security.jwt.JwtProperties;
         "security",                // 공통 security 모듈
         "logging",
         "event",                // 이벤트 모듈
+        "util"
 })
 public class UserInfoApplication {
 

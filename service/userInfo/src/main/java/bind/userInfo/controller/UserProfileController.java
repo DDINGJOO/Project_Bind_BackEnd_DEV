@@ -16,6 +16,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import util.nicknamefilter.NicknameFilterService;
 
 import java.util.List;
 
@@ -26,11 +27,12 @@ public class UserProfileController {
 
     private final UserProfileService userProfileService;
     private final EventPubService eventPubService;
+    private final NicknameFilterService nicknameFilterService;
 
     // 1. 단건 조회 (흥미/관심 목록 포함)
     @GetMapping("/{userId}")
-    public ResponseEntity<UserProfileSummaryResponse> getProfile(@PathVariable String userId) {
-        return ResponseEntity.ok(userProfileService.getProfile(userId));
+    public ResponseEntity<BaseResponse<UserProfileSummaryResponse>> getProfile(@PathVariable String userId) {
+        return ResponseEntity.ok(BaseResponse.success(userProfileService.getProfile(userId)));
     }
 
     // 2. 페이징 검색 (닉네임/지역/관심 N개 필터링, 흥미 목록 포함)
@@ -52,6 +54,14 @@ public class UserProfileController {
             @RequestBody UserProfileCreateRequest request
     ) {
         UserProfileSummaryResponse response;
+
+        try{
+            nicknameFilterService.validateNickname(request.getNickname());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(BaseResponse.error(e.getMessage()));
+        }
+
+
         try{
             response = userProfileService.create(request);
         }catch (ProfileException e){
@@ -72,16 +82,24 @@ public class UserProfileController {
 
     // 4. 업데이트 (부분/전체)
     @PatchMapping("/{userId}")
-    public ResponseEntity<UserProfileSummaryResponse> updateProfile(
+    public ResponseEntity<BaseResponse<UserProfileSummaryResponse>> updateProfile(
             @PathVariable String userId,
             @RequestBody UserProfileUpdateRequest request
     ) {
-        return ResponseEntity.ok(userProfileService.updateProfile(userId, request));
+
+        if(request.getNickname() != null) {
+            try {
+                nicknameFilterService.validateNickname(request.getNickname());
+            } catch (Exception e) {
+                return ResponseEntity.internalServerError().body(BaseResponse.error(e.getMessage()));
+            }
+        }
+        return ResponseEntity.ok(BaseResponse.success(userProfileService.updateProfile(userId, request)));
     }
 
     // 5. 삭제
     @DeleteMapping("/{userId}")
-    public ResponseEntity<Void> deleteProfile(@PathVariable String userId) {
+    public ResponseEntity<BaseResponse<Void>> deleteProfile(@PathVariable String userId) {
         userProfileService.deleteProfile(userId);
         return ResponseEntity.noContent().build();
     }

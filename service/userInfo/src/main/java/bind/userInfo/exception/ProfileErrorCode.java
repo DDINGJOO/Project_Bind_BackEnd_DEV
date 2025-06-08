@@ -17,7 +17,9 @@ public enum ProfileErrorCode implements ErrorCode {
     PROFILE_PICTURE_DELETE_FAILED(500, "Profile picture delete failed", "PROFILE_PICTURE_DELETE_FAILED"),
     PROFILE_PICTURE_NOT_FOUND(404, "Profile picture not found", "PROFILE_PICTURE_NOT_FOUND"),
     PROFILE_PICTURE_SIZE_EXCEEDED(400, "Profile picture size exceeded", "PROFILE_PICTURE_SIZE_EXCEEDED"),
-    PROFILE_PICTURE_FORMAT_UNSUPPORTED(400, "Profile picture format unsupported", "PROFILE_PICTURE_FORMAT_UNSUPPORTED");
+    PROFILE_PICTURE_FORMAT_UNSUPPORTED(400, "Profile picture format unsupported", "PROFILE_PICTURE_FORMAT_UNSUPPORTED"),
+    NICKNAME_ALREADY_EXISTS(409, "Nickname already exists", "NICKNAME_ALREADY_EXISTS"),
+    INVALID_PROFILE_DATA(400, "Invalid profile data", "INVALID_PROFILE_DATA"),;
 
 
     private final int status;

@@ -62,6 +62,15 @@ public class UserProfileService {
 
     // CRUD 예시(생성)
     public UserProfileSummaryResponse create(UserProfileCreateRequest req) {
+        // 1. 필수 필드 체크
+        if (req.getUserId() == null || req.getNickname() == null) {
+            throw new ProfileException(ProfileErrorCode.INVALID_PROFILE_DATA);
+        }
+        // 2. 중복 닉네임 체크 (닉네임 필터링 서비스 사용)
+        if (userProfileRepository.existsByNickname(req.getNickname())) {
+            throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
+        }
+
         UserProfile profile = UserProfile.builder()
                 .userId(req.getUserId())
                 .nickname(req.getNickname())
@@ -114,6 +123,10 @@ public class UserProfileService {
         userInterestRepository.deleteAllByUserId(userId);
     }
 
+
+
+
+
     @Transactional
     public UserProfileSummaryResponse updateProfile(String userId, UserProfileUpdateRequest req) {
         // 1. 프로필 엔티티 가져오기
@@ -121,7 +134,13 @@ public class UserProfileService {
                 .orElseThrow(() -> new ProfileException(ProfileErrorCode.PROFILE_NOT_FOUND));
 
         // 2. 변경 필드 반영
-        if (req.getNickname() != null) profile.setNickname(req.getNickname());
+        if (req.getNickname() != null) {
+            // 닉네임 변경 시 중복 체크
+            if (userProfileRepository.existsByNickname(req.getNickname())) {
+                throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
+            }
+            profile.setNickname(req.getNickname());
+        };
         if (req.getProfileImageId() != null) profile.setProfileImageId(req.getProfileImageId());
         if (req.getIntroduction() != null) profile.setIntroduction(req.getIntroduction());
         if (req.getLocation() != null) profile.setLocation(req.getLocation());
