@@ -19,7 +19,9 @@ public enum ProfileErrorCode implements ErrorCode {
     PROFILE_PICTURE_SIZE_EXCEEDED(400, "Profile picture size exceeded", "PROFILE_PICTURE_SIZE_EXCEEDED"),
     PROFILE_PICTURE_FORMAT_UNSUPPORTED(400, "Profile picture format unsupported", "PROFILE_PICTURE_FORMAT_UNSUPPORTED"),
     NICKNAME_ALREADY_EXISTS(409, "Nickname already exists", "NICKNAME_ALREADY_EXISTS"),
-    INVALID_PROFILE_DATA(400, "Invalid profile data", "INVALID_PROFILE_DATA"),;
+    INVALID_PROFILE_DATA(400, "Invalid profile data", "INVALID_PROFILE_DATA"),
+    PROFILE_ALREADY_EXISTS(409, "Profile already exists", "PROFILE_ALREADY_EXISTS"),
+    ;
 
 
     private final int status;

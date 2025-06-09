@@ -35,6 +35,7 @@ public class UserProfileService {
     private final UserInterestRepository userInterestRepository;
     private final UserGenreRepository userGenreRepository;
 
+
     // --- 단건 조회 ---
     @Transactional(readOnly = true)
     public UserProfileSummaryResponse getProfile(String userId) {
@@ -65,10 +66,13 @@ public class UserProfileService {
     // --- 프로필 생성 ---
     @Transactional
     public UserProfileSummaryResponse create(UserProfileCreateRequest req) {
-        // 닉네임 중복 검사
-        if (userProfileRepository.findByNickname(req.getNickname()).isPresent()) {
-            throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
+
+        if (userProfileRepository.existsByUserId((req.getUserId()))) {
+            throw new ProfileException(ProfileErrorCode.PROFILE_ALREADY_EXISTS);
         }
+
+
+        // 프로필 생성 시각
         LocalDateTime now = LocalDateTime.now();
 
         UserProfile profile = UserProfile.builder()
@@ -93,10 +97,6 @@ public class UserProfileService {
     // --- 프로필 업데이트 ---
     @Transactional
     public UserProfileSummaryResponse updateProfile(String userId, UserProfileUpdateRequest req) {
-
-        if (req.getNickname() != null && userProfileRepository.findByNickname(req.getNickname()).isPresent()) {
-            throw new ProfileException(ProfileErrorCode.NICKNAME_ALREADY_EXISTS);
-        }
 
         UserProfile profile = getProfileOrThrow(userId);
         patchProfile(profile, req);

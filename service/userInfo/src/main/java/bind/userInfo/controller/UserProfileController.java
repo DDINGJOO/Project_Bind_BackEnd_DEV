@@ -18,6 +18,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import util.nicknamefilter.NicknameFilterService;
+import util.nicknamefilter.exception.NickNameFilterException;
 
 import java.util.List;
 
@@ -32,7 +33,7 @@ public class UserProfileController {
 
 
 
-    // 1. 단건 조회 (흥미/관심 목록 포함)
+
     @GetMapping("/{userId}")
     public ResponseEntity<BaseResponse<UserProfileSummaryResponse>> getProfile(@PathVariable String userId) {
         return ResponseEntity.ok(
@@ -62,33 +63,22 @@ public class UserProfileController {
     public ResponseEntity<BaseResponse<UserProfileSummaryResponse>> createProfile(
             @RequestBody UserProfileCreateRequest request
     ) {
-        UserProfileSummaryResponse response;
-
         try{
             // 닉네임 필터링
             nicknameFilterService.validateNickname(request.getNickname());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
 
-        }
+            UserProfileSummaryResponse createdProfile = userProfileService.create(request);
+            eventPubService.userProfileCreatedEventPub(createdProfile);
 
 
-        try{
-            response = userProfileService.create(request);
-        }catch (ProfileException e){
+            return ResponseEntity.ok(BaseResponse.success(createdProfile));
+        } catch (NickNameFilterException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
+        } catch (ProfileException e) {
             return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
         } catch (Exception e) {
             return ResponseEntity.internalServerError().body(BaseResponse.error("프로필 생성 중 오류가 발생했습니다."));
         }
-
-        try{
-            eventPubService.userProfileCreatedEventPub(
-                    response
-            );
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(BaseResponse.error("카프카 메세지 발행 중 오류가 발생했습니다."));
-        }
-        return ResponseEntity.ok(BaseResponse.success(response));
     }
 
 
@@ -99,21 +89,21 @@ public class UserProfileController {
             @PathVariable String userId,
             @RequestBody UserProfileUpdateRequest request
     ) {
-
-        // 닉네임 필터링
         try {
-            nicknameFilterService.validateNickname(request.getNickname());
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(BaseResponse.error(e.getMessage()));
-        }
-        var response  = userProfileService.updateProfile(userId, request);
-
-        try {
-            eventPubService.userProfileUpdatedEventPub(response);
+            // 닉네임 필터링
+            if (request.getNickname() != null) {
+                nicknameFilterService.validateNickname(request.getNickname());
+            }
+            UserProfileSummaryResponse updatedProfile = userProfileService.updateProfile(userId, request);
+            eventPubService.userProfileUpdatedEventPub(updatedProfile);
+            return ResponseEntity.ok(BaseResponse.success(updatedProfile));
+        } catch (NickNameFilterException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
+        } catch (ProfileException e) {
+            return ResponseEntity.badRequest().body(BaseResponse.fail(e.getErrorCode()));
         } catch (Exception e) {
-            return ResponseEntity.internalServerError().body(BaseResponse.error("카프카 메세지 발행 중 오류가 발생했습니다."));
+            return ResponseEntity.internalServerError().body(BaseResponse.error("프로필 업데이트 중 오류가 발생했습니다."));
         }
-        return ResponseEntity.ok(BaseResponse.success(response));
     }
 
     // 5. 삭제
@@ -122,4 +112,5 @@ public class UserProfileController {
         userProfileService.deleteProfile(userId);
         return ResponseEntity.noContent().build();
     }
+
 }

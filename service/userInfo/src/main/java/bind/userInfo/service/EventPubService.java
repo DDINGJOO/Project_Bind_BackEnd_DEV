@@ -8,7 +8,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import outbox.OutboxPublisher;
-import security.jwt.JwtProvider;
 
 @Service
 @RequiredArgsConstructor
@@ -16,9 +15,9 @@ import security.jwt.JwtProvider;
 
 public class EventPubService {
 
-    private  final JwtProvider tokenProvider;
+
     private final OutboxPublisher outboxService;
-    private final UserProfileService userProfileService;
+
 
     /**
      * 이메일 인증 이벤트를 카프카에 발행합니다.

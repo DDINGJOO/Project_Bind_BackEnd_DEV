@@ -1,6 +1,8 @@
 package util.nicknamefilter;
 
 import org.springframework.stereotype.Service;
+import util.nicknamefilter.exception.NickNameFilterErrorCode;
+import util.nicknamefilter.exception.NickNameFilterException;
 
 @Service
 public class NicknameFilterService {
@@ -27,24 +29,32 @@ public class NicknameFilterService {
      * 닉네임이 적합한지 검사, 부적합하면 예외 발생 (혹은 메시지 리턴 등)
      */
     public void validateNickname(String nickname) {
+        if (nickname == null || nickname.isBlank()) {
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_EMPTY);
+        }
         if (containsBadWord(nickname)) {
-            throw new IllegalArgumentException("부적절한 닉네임(금지어 포함)");
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_CONTAINS_BAD_WORD);
         }
-        if (nickname.length() < 2 || nickname.length() > 20) {
-            throw new IllegalArgumentException("닉네임은 2자 이상 20자 이하로 입력해주세요.");
+
+        if (nickname.length() < 2) {
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_TOO_SHORT);
         }
-        if (!nickname.matches("^[a-zA-Z0-9가-힣_]+$")) {
-            throw new IllegalArgumentException("닉네임은 한글, 영문, 숫자, 밑줄(_)만 사용할 수 있습니다.");
+        if (nickname.length() > 20) {
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_TOO_LONG);
+        }
+        if (!nickname.matches("^[a-zA-Z0-9_]+$")) {
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_INVALID_CHARACTERS);
         }
         if (nickname.startsWith("_") || nickname.endsWith("_")) {
-            throw new IllegalArgumentException("닉네임은 밑줄(_)로 시작하거나 끝날 수 없습니다.");
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_STARTS_OR_ENDS_WITH_UNDERSCORE);
         }
         if (nickname.contains("__")) {
-            throw new IllegalArgumentException("닉네임에 연속된 밑줄(__)은 사용할 수 없습니다.");
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_CONTAINS_CONSECUTIVE_UNDERSCORES);
         }
-        if (nickname.chars().anyMatch(Character::isWhitespace)) {
-            throw new IllegalArgumentException("닉네임에 공백을 포함할 수 없습니다.");
+        if (nickname.contains(" ")) {
+            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_CONTAINS_SPACES);
         }
+
 
 
 

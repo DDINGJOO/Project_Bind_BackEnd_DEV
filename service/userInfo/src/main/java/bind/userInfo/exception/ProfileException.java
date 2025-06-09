@@ -13,6 +13,7 @@ public class ProfileException extends BaseException {
         this.errorCode = c;
     }
 
+
     @Override
     public ErrorCode getErrorCode() {
         return errorCode;

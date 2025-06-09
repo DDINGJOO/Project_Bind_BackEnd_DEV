@@ -1,14 +1,17 @@
 package util.nicknamefilter;
 
 
+import lombok.Getter;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
+@Getter
 @Component
 public class BadWordLoader {
     private final Set<String> badWords = new HashSet<>();
@@ -16,7 +19,7 @@ public class BadWordLoader {
     @PostConstruct
     public void load() {
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                getClass().getResourceAsStream("/badwords.txt")))) {
+                Objects.requireNonNull(getClass().getResourceAsStream("/badwords.txt"))))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 badWords.add(line.trim().toLowerCase());
@@ -26,7 +29,4 @@ public class BadWordLoader {
         }
     }
 
-    public Set<String> getBadWords() {
-        return badWords;
-    }
 }

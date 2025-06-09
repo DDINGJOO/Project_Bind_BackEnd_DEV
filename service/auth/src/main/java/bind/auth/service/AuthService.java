@@ -38,13 +38,10 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private  final JwtProvider tokenProvider;
     private final UserRoleRepository userRoleRepository;
-
-
     private final UserSuspensionService userSuspensionService;
     private final WithdrawHistoryRepository withdrawHistoryRepository;
     private final RedisService redisService;
     private final PasswordHistoryRepository passwordHistoryRepository;
-
 
 
 
@@ -180,12 +177,9 @@ public class AuthService {
         if(!user.isEmailVerified()){
             return  AuthErrorCode.EMAIL_NOT_VERIFIED;
         }
-
-
         if (!user.isActive()) {
             return AuthErrorCode.DEACTIVATED_USER;
         }
-
         if (!passwordEncoder.matches(request.password(), user.getPassword())) {
             return AuthErrorCode.PASSWORD_NOT_MATCHED;
         }
@@ -260,4 +254,5 @@ public class AuthService {
 
         return user;
     }
+
 }
