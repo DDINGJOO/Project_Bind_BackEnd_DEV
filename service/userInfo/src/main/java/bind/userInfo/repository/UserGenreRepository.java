@@ -2,7 +2,6 @@ package bind.userInfo.repository;
 
 
 import bind.userInfo.entity.UserGenre;
-import data.enums.Genre;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +11,7 @@ import java.util.List;
 public interface UserGenreRepository extends JpaRepository<UserGenre , Long> {
     List<UserGenre> findByUserId(String userId);
 
+    List<UserGenre> findAllByUserIdIn(List<String> userIds);
     void deleteAllByUserId(String userId);
 
 

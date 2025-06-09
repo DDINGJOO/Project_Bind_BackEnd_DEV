@@ -34,8 +34,6 @@ public class UserProfile {
     @Column(length = 8)
     private String gender;
 
-    @Column
-    private LocalDateTime birthdate;
 
     @Enumerated(EnumType.STRING)
     private Location location;

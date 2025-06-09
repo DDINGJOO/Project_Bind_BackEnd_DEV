@@ -42,15 +42,6 @@ public class NicknameFilterService {
         if (nickname.length() > 20) {
             throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_TOO_LONG);
         }
-        if (!nickname.matches("^[a-zA-Z0-9_]+$")) {
-            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_INVALID_CHARACTERS);
-        }
-        if (nickname.startsWith("_") || nickname.endsWith("_")) {
-            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_STARTS_OR_ENDS_WITH_UNDERSCORE);
-        }
-        if (nickname.contains("__")) {
-            throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_CONTAINS_CONSECUTIVE_UNDERSCORES);
-        }
         if (nickname.contains(" ")) {
             throw new NickNameFilterException(NickNameFilterErrorCode.NICKNAME_CONTAINS_SPACES);
         }

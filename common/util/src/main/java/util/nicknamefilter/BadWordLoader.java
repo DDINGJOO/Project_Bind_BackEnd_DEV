@@ -18,15 +18,17 @@ public class BadWordLoader {
 
     @PostConstruct
     public void load() {
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(getClass().getResourceAsStream("/badwords.txt"))))) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(Objects.requireNonNull(getClass().getResourceAsStream("/badwords.txt"))))) {
             String line;
             while ((line = reader.readLine()) != null) {
-                badWords.add(line.trim().toLowerCase());
+                String trimmed = line.trim();
+                if (!trimmed.isEmpty()) {
+                    badWords.add(trimmed.toLowerCase());
+                }
             }
         } catch (Exception e) {
             throw new RuntimeException("금지어 로딩 실패", e);
         }
     }
-
 }

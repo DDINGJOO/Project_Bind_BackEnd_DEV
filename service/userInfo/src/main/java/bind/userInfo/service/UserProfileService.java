@@ -22,8 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 
@@ -45,24 +44,34 @@ public class UserProfileService {
         return UserProfileConverter.toResponse(profile, interests, genres);
     }
 
-    // --- 필터+페이징 검색 ---
     @Transactional(readOnly = true)
     public Page<UserProfileSummaryResponse> searchProfiles(
-            String nickname, Location location, List<Instrument> interests, List<Genre> genres, Pageable pageable) {
+            String nickname, Location location, Pageable pageable) {
 
-        Page<UserProfile> profiles = userProfileRepository.searchProfiles(
-                nickname, location, interests, interests == null || interests.isEmpty(),
-                genres == null || genres.isEmpty(), genres, pageable);
+        // 1. 프로필만 페이징 조회 (fetch join 사용X)
+        Page<UserProfile> profiles = userProfileRepository.searchProfilesBasic(nickname, location, pageable);
 
+        // 2. userId 목록 추출 (empty 방어)
+        List<String> userIds = profiles.stream()
+                .map(UserProfile::getUserId)
+                .filter(Objects::nonNull)
+                .toList();
+
+        Map<String, List<UserInterest>> interestsMap = userIds.isEmpty() ? Collections.emptyMap()
+                : userInterestRepository.findAllByUserIdIn(userIds)
+                .stream().collect(Collectors.groupingBy(UserInterest::getUserId));
+
+        Map<String, List<UserGenre>> genresMap = userIds.isEmpty() ? Collections.emptyMap()
+                : userGenreRepository.findAllByUserIdIn(userIds)
+                .stream().collect(Collectors.groupingBy(UserGenre::getUserId));
+
+        // 3. 매핑
         return profiles.map(profile -> {
-            // Interests는 fetch join된 경우가 아니면 직접 조회
-            List<UserInterest> interestList = Optional.ofNullable(profile.getUserInterests())
-                    .orElseGet(() -> userInterestRepository.findByUserId(profile.getUserId()));
-            List<UserGenre> genreList = userGenreRepository.findByUserId(profile.getUserId());
+            List<UserInterest> interestList = interestsMap.getOrDefault(profile.getUserId(), Collections.emptyList());
+            List<UserGenre> genreList = genresMap.getOrDefault(profile.getUserId(), Collections.emptyList());
             return UserProfileConverter.toResponse(profile, interestList, genreList);
         });
     }
-
     // --- 프로필 생성 ---
     @Transactional
     public UserProfileSummaryResponse create(UserProfileCreateRequest req) {
