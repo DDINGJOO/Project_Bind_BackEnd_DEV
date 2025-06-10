@@ -12,6 +12,9 @@ import data.enums.Genre;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.Parameters;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -54,6 +57,26 @@ public class UserProfileController {
 
 
     // 2. 페이징 검색 (닉네임/지역/관심 N개 필터링, 흥미 목록 포함)
+    @Operation(
+            summary = "프로필 검색(페이징)",
+            description = "닉네임, 지역, 관심악기/장르 등으로 필터링해서 페이징 검색"
+    )
+    @Parameters({
+            @Parameter(name = "nickname", description = "닉네임(부분 검색)", example = "홍길동"),
+            @Parameter(name = "location", description = "활동 지역", schema = @Schema(implementation = Location.class)),
+            @Parameter(
+                    name = "interests",
+                    description = "관심 악기 리스트(다중 선택)",
+                    array = @ArraySchema(schema = @Schema(implementation = Instrument.class)),
+                    example = "VOCAL"
+            ),
+            @Parameter(
+                    name = "genres",
+                    description = "관심 장르 리스트(다중 선택)",
+                    array = @ArraySchema(schema = @Schema(implementation = Genre.class)),
+                    example = "ROCK"
+            )
+    })
     @GetMapping
     public ResponseEntity<Page<BaseResponse<UserProfileSummaryResponse>>> searchProfiles(
             @RequestParam(required = false) String nickname,
