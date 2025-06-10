@@ -12,8 +12,6 @@ import data.enums.Genre;
 import data.enums.instrument.Instrument;
 import data.enums.location.Location;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.Parameters;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,6 +25,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import util.nicknamefilter.NicknameFilterService;
 import util.nicknamefilter.exception.NickNameFilterException;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/user-profiles")
@@ -54,29 +54,21 @@ public class UserProfileController {
 
 
     // 2. 페이징 검색 (닉네임/지역/관심 N개 필터링, 흥미 목록 포함)
-    @Operation(
-            summary = "프로필 검색(페이징)",
-            description = "닉네임, 지역, 관심악기/장르 등으로 필터링해서 페이징 검색"
-    )
-    @Parameters({
-            @Parameter(name = "nickname", description = "닉네임(부분 검색)", example = "홍길동"),
-            @Parameter(name = "location", description = "활동 지역", schema = @Schema(implementation = Location.class)),
-            @Parameter(name = "interests", description = "관심 악기 리스트", schema = @Schema(type = "array", implementation = Instrument.class)),
-            @Parameter(name = "genres", description = "관심 장르 리스트", schema = @Schema(type = "array", implementation = Genre.class)),
-    })
     @GetMapping
     public ResponseEntity<Page<BaseResponse<UserProfileSummaryResponse>>> searchProfiles(
             @RequestParam(required = false) String nickname,
             @RequestParam(required = false) Location location,
+            @RequestParam(required = false) List<Instrument> interests,
+            @RequestParam(required = false) List<Genre> genres,
             @PageableDefault(size = 20) Pageable pageable
     ) {
         Page<UserProfileSummaryResponse> profiles = userProfileService.searchProfiles(
-                nickname, location, pageable
+                nickname, location, interests, genres, pageable
         );
-
         Page<BaseResponse<UserProfileSummaryResponse>> responsePage = profiles.map(BaseResponse::success);
         return ResponseEntity.ok(responsePage);
     }
+
 
     // 3. 생성
     @Operation(summary = "프로필 생성", description = "새로운 유저 프로필 생성")

@@ -6,12 +6,11 @@ import bind.image.entity.ImageFile;
 import bind.image.exception.ImageErrorCode;
 import bind.image.exception.ImageException;
 import bind.image.repository.ImageFileRepository;
-import bind.image.util.ImageUtil;
+import bind.image.utils.ImageUtil;
 import data.enums.ResourceCategory;
 import data.enums.image.ImageStatus;
 import data.enums.image.ImageVisibility;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -21,8 +20,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-
-import static java.util.Locale.filter;
 
 
 @Service

@@ -1,6 +1,7 @@
 package bind.userInfo.repository;
 
 import bind.userInfo.entity.UserProfile;
+import bind.userInfo.repository.querydsl.UserProfileRepositoryCustom;
 import data.enums.location.Location;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -11,7 +12,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface UserProfileRepository
-        extends JpaRepository<UserProfile, String> {
+        extends JpaRepository<UserProfile, String>, UserProfileRepositoryCustom {
 
     Optional<UserProfile> findByUserId(String userId);
     Optional<UserProfile> findByNickname(String nickname);

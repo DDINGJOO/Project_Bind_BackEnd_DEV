@@ -46,12 +46,15 @@ public class UserProfileService {
 
     @Transactional(readOnly = true)
     public Page<UserProfileSummaryResponse> searchProfiles(
-            String nickname, Location location, Pageable pageable) {
+            String nickname, Location location,
+            List<Instrument> interests, List<Genre> genres,
+            Pageable pageable) {
 
-        // 1. 프로필만 페이징 조회 (fetch join 사용X)
-        Page<UserProfile> profiles = userProfileRepository.searchProfilesBasic(nickname, location, pageable);
+        // 1. QueryDSL 기반 페이징 필터 검색
+        Page<UserProfile> profiles = userProfileRepository
+                .searchProfilesDsl(nickname, location, interests, genres, pageable);
 
-        // 2. userId 목록 추출 (empty 방어)
+        // 2. userId 목록 추출
         List<String> userIds = profiles.stream()
                 .map(UserProfile::getUserId)
                 .filter(Objects::nonNull)

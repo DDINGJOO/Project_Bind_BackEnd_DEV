@@ -1,4 +1,4 @@
-package bind.image.util;
+package bind.image.utils;
 
 import org.springframework.web.multipart.MultipartFile;
 
