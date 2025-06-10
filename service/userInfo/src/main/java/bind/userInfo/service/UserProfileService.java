@@ -90,7 +90,6 @@ public class UserProfileService {
         UserProfile profile = UserProfile.builder()
                 .userId(req.getUserId())
                 .nickname(req.getNickname())
-                .profileImageUrl(req.getProfileImageUrl())
                 .introduction(req.getIntroduction())
                 .location(req.getLocation())
                 .profilePublic(req.getProfilePublic())
@@ -147,7 +146,6 @@ public class UserProfileService {
 
     private void patchProfile(UserProfile profile, UserProfileUpdateRequest req) {
         Optional.ofNullable(req.getNickname()).ifPresent(profile::setNickname);
-        Optional.ofNullable(req.getProfileImageUrl()).ifPresent(profile::setProfileImageUrl);
         Optional.ofNullable(req.getIntroduction()).ifPresent(profile::setIntroduction);
         Optional.ofNullable(req.getLocation()).ifPresent(profile::setLocation);
         Optional.ofNullable(req.getProfilePublic()).ifPresent(profile::setProfilePublic);

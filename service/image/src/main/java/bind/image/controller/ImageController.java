@@ -98,7 +98,7 @@ public class ImageController {
                                                       @RequestParam String referenceId) {
         log.info("Delete images request: category={}, referenceId={}", category, referenceId);
         try {
-            imageFileService.markAsPendingDelete(category, referenceId);
+            imageFileService.markAsPendingDeleteExceptTemp(category, referenceId);
             return ResponseEntity.ok(BaseResponse.success());
         } catch (ImageException e) {
             return ResponseEntity.internalServerError().body(BaseResponse.fail(e.getErrorCode()));

@@ -16,7 +16,7 @@ public class UserProfileUpdateEventHandler  implements EventHandler<UserProfileU
 
     @Override
     public EventType supportedType() {
-        return EventType.USER_PROFILE_UPDATED;
+        return EventType.USER_PROFILE_NICKNAME_UPDATED;
     }
 
     @Override

@@ -27,7 +27,7 @@ public class GenericEventDeserializer implements Deserializer<Event<? extends Ev
     static {
         PAYLOAD_TYPE_MAP.put(EventType.EMAIL_VERIFICATION, EmailVerificationEventPayload.class);
         PAYLOAD_TYPE_MAP.put(EventType.USER_PROFILE_CREATED, UserProfileCreatedEventPayload.class);
-        PAYLOAD_TYPE_MAP.put(EventType.USER_PROFILE_UPDATED, UserProfileCreatedEventPayload.class);
+        PAYLOAD_TYPE_MAP.put(EventType.USER_PROFILE_NICKNAME_UPDATED, UserProfileCreatedEventPayload.class);
         PAYLOAD_TYPE_MAP.put(EventType.USER_WITHDRAWN, UserProfileCreatedEventPayload.class);
         PAYLOAD_TYPE_MAP.put(EventType.USER_REGISTERED, UserRegisteredEventPayload.class);
 

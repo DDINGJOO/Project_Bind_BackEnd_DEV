@@ -6,7 +6,7 @@ import lombok.Getter;
 @Getter
 @Builder
 public class ImageUploadResponse {
-    private Long id;
+    private String referenceId;
     private String url;
     private String thumbnailUrl;
 }

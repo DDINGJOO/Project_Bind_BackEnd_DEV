@@ -17,8 +17,6 @@ public class UserProfileUpdateRequest {
     @Schema(description = "수정할 닉네임", example = "베이스장인")
     private String nickname;
 
-    @Schema(description = "프로필 이미지 URL", example = "https://cdn.example.com/profile2.jpg")
-    private String profileImageUrl;
 
     @Schema(description = "자기소개(최대 200자)", example = "드럼/기타/베이스 합주 가능합니다.")
     @Size(max = 200, message = "소개는 최대 200자까지 입력할 수 있습니다.")
@@ -29,6 +27,8 @@ public class UserProfileUpdateRequest {
 
     @Schema(description = "프로필 공개 여부", example = "true")
     private Boolean profilePublic;
+
+    private Long profileId;
 
     @Schema(
             description = "흥미 악기 전체 목록 (ENUM: GUITAR, DRUM, VOCAL 등)",

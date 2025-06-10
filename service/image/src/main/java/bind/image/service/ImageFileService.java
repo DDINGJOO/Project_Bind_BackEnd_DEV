@@ -74,7 +74,6 @@ public class ImageFileService {
         imageFileRepository.save(imageFile);
 
         return ImageUploadResponse.builder()
-                .id(imageFile.getId())
                 .url(publicUrlPrefix + storedPath)
                 .build();
     }
@@ -102,7 +101,7 @@ public class ImageFileService {
         return images.stream()
                 .filter(image -> image.getStatus() == ImageStatus.CONFIRMED)
                 .map(image -> ImageResponse.builder()
-                        .id(image.getId())
+                        .referenceId(referenceId)
                         .isThumbnail(image.isThumbnail())
                         .url(publicUrlPrefix + image.getStoredPath())
                         .build())
@@ -135,14 +134,20 @@ public class ImageFileService {
         changeStatusForImages(category, referenceId, ImageStatus.CONFIRMED);
     }
 
-    public void markAsPendingDelete(ResourceCategory category, String referenceId) {
+    public void markAsPendingDeleteExceptTemp(ResourceCategory category, String referenceId) {
         List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category, referenceId);
         if (images.isEmpty()) {
             throw new ImageException(ImageErrorCode.IMAGE_NOT_FOUND);
         }
-        images.forEach(img -> img.setStatus(ImageStatus.PENDING_DELETE));
+
+        // TEMP 아닌 이미지만 상태 변경
+        images.stream()
+                .filter(img -> img.getStatus() != ImageStatus.TEMP)
+                .forEach(img -> img.setStatus(ImageStatus.PENDING_DELETE));
+
         imageFileRepository.saveAll(images);
     }
+
 
     private void changeStatusForImages(ResourceCategory category, String referenceId, ImageStatus newStatus) {
         List<ImageFile> images = imageFileRepository.findByCategoryAndReferenceId(category, referenceId);

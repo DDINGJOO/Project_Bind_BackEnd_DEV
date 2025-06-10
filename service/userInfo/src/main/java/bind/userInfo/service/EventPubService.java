@@ -54,7 +54,7 @@ public class EventPubService {
         );
 
         Event<UserProfileCreatedEventPayload> event = new Event<>(
-                EventType.USER_PROFILE_UPDATED,
+                EventType.USER_PROFILE_NICKNAME_UPDATED,
                 System.currentTimeMillis(),
                 payload
         );

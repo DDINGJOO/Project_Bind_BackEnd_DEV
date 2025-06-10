@@ -33,5 +33,5 @@ spring:
 
 app:
   kafka:
-    event-topics: user-registered-events,user-login-events,article-created-topic, article-deleted-topic, article-updated-topic
+    event-topics: user-registered-events,user-login-events,article-created-topic, article-deleted-topic, article-updated-topic,user-profile-image-update-topic
     consumer-group: userInfo-service-group
